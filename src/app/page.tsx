@@ -60,6 +60,7 @@ export default function TrackerApp() {
   const [habits, setHabits] = useState<HabitItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Active view & filtering states
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
@@ -86,17 +87,22 @@ export default function TrackerApp() {
   // Load data from Supabase on mount
   useEffect(() => {
     (async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUserEmail(user?.email ?? null);
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setUserEmail(user?.email ?? null);
 
-      const { tasks, clients, habits } = await loadAll();
-      setTasks(tasks);
-      setClients(clients);
-      setHabits(habits);
-      setIsLoaded(true);
+        const { tasks, clients, habits } = await loadAll();
+        setTasks(tasks);
+        setClients(clients);
+        setHabits(habits);
+      } catch (err) {
+        setErrorMessage(err instanceof Error ? err.message : 'Failed to load your data.');
+      } finally {
+        setIsLoaded(true);
+      }
     })();
   }, []);
 
@@ -149,36 +155,46 @@ export default function TrackerApp() {
 
   // Task Actions
   const handleSaveTask = async (taskData: Partial<TaskItem>) => {
-    if (taskData.id) {
-      // Edit existing
-      const updated = await dbUpdateTask(taskData.id, taskData);
-      setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-    } else {
-      // Create new
-      const created = await dbCreateTask({
-        title: taskData.title || 'Untitled Item',
-        description: taskData.description || '',
-        workspace: taskData.workspace || 'personal',
-        status: taskModalDefaultStatus || taskData.status || 'todo',
-        priority: taskData.priority || 'medium',
-        dueDate: taskModalDefaultDate || taskData.dueDate || getTodayString(),
-        dueTime: taskData.dueTime,
-        tags: taskData.tags || [],
-        clientId: taskModalDefaultClientId || taskData.clientId,
-        clientName: taskData.clientName,
-        isEvent: taskData.isEvent || false,
-        eventDurationMinutes: taskData.eventDurationMinutes,
-        location: taskData.location,
-        estimatedHours: taskData.estimatedHours,
-      });
-      setTasks((prev) => [created, ...prev]);
+    try {
+      if (taskData.id) {
+        // Edit existing
+        const updated = await dbUpdateTask(taskData.id, taskData);
+        setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+      } else {
+        // Create new
+        const created = await dbCreateTask({
+          title: taskData.title || 'Untitled Item',
+          description: taskData.description || '',
+          workspace: taskData.workspace || 'personal',
+          status: taskModalDefaultStatus || taskData.status || 'todo',
+          priority: taskData.priority || 'medium',
+          dueDate: taskModalDefaultDate || taskData.dueDate || getTodayString(),
+          dueTime: taskData.dueTime,
+          tags: taskData.tags || [],
+          clientId: taskModalDefaultClientId || taskData.clientId,
+          clientName: taskData.clientName,
+          isEvent: taskData.isEvent || false,
+          eventDurationMinutes: taskData.eventDurationMinutes,
+          location: taskData.location,
+          estimatedHours: taskData.estimatedHours,
+        });
+        setTasks((prev) => [created, ...prev]);
+      }
+      setEditingTask(null);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to save the task.');
     }
-    setEditingTask(null);
   };
 
   const handleDeleteTask = async (taskId: string) => {
+    const previous = tasks;
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
-    await dbDeleteTask(taskId);
+    try {
+      await dbDeleteTask(taskId);
+    } catch (err) {
+      setTasks(previous);
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to delete the task.');
+    }
   };
 
   const handleToggleTaskStatus = async (taskId: string) => {
@@ -186,18 +202,30 @@ export default function TrackerApp() {
     if (!task) return;
     const nextStatus: TaskStatus = task.status === 'done' ? 'todo' : 'done';
     const completedAt = nextStatus === 'done' ? getTodayString() : undefined;
+    const previous = tasks;
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, status: nextStatus, completedAt } : t))
     );
-    await dbUpdateTask(taskId, { status: nextStatus, completedAt });
+    try {
+      await dbUpdateTask(taskId, { status: nextStatus, completedAt });
+    } catch (err) {
+      setTasks(previous);
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to update the task.');
+    }
   };
 
   const handleUpdateTaskStatus = async (taskId: string, newStatus: TaskStatus) => {
     const completedAt = newStatus === 'done' ? getTodayString() : undefined;
+    const previous = tasks;
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, status: newStatus, completedAt } : t))
     );
-    await dbUpdateTask(taskId, { status: newStatus, completedAt });
+    try {
+      await dbUpdateTask(taskId, { status: newStatus, completedAt });
+    } catch (err) {
+      setTasks(previous);
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to update the task.');
+    }
   };
 
   const handleOpenTaskModal = (
@@ -225,36 +253,46 @@ export default function TrackerApp() {
 
   // Client Actions
   const handleSaveClient = async (clientData: Partial<Client>) => {
-    if (clientData.id) {
-      const updated = await updateClientRecord(clientData.id, clientData);
-      setClients((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
-      if (clientData.company) {
-        setTasks((prev) =>
-          prev.map((t) =>
-            t.clientId === clientData.id ? { ...t, clientName: clientData.company } : t
-          )
-        );
+    try {
+      if (clientData.id) {
+        const updated = await updateClientRecord(clientData.id, clientData);
+        setClients((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+        if (clientData.company) {
+          setTasks((prev) =>
+            prev.map((t) =>
+              t.clientId === clientData.id ? { ...t, clientName: clientData.company } : t
+            )
+          );
+        }
+      } else {
+        const created = await createClientRecord({
+          name: clientData.name || clientData.company || 'New Client',
+          company: clientData.company || 'Client Co',
+          email: clientData.email || '',
+          phone: clientData.phone,
+          status: clientData.status || 'active',
+          rate: clientData.rate || '$150/hr',
+          totalBudget: clientData.totalBudget,
+          color: clientData.color || '#171717',
+          notes: clientData.notes || '',
+        });
+        setClients((prev) => [...prev, created]);
       }
-    } else {
-      const created = await createClientRecord({
-        name: clientData.name || clientData.company || 'New Client',
-        company: clientData.company || 'Client Co',
-        email: clientData.email || '',
-        phone: clientData.phone,
-        status: clientData.status || 'active',
-        rate: clientData.rate || '$150/hr',
-        totalBudget: clientData.totalBudget,
-        color: clientData.color || '#171717',
-        notes: clientData.notes || '',
-      });
-      setClients((prev) => [...prev, created]);
+      setEditingClient(null);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to save the client.');
     }
-    setEditingClient(null);
   };
 
   const handleDeleteClient = async (clientId: string) => {
+    const previous = clients;
     setClients((prev) => prev.filter((c) => c.id !== clientId));
-    await deleteClientRecord(clientId);
+    try {
+      await deleteClientRecord(clientId);
+    } catch (err) {
+      setClients(previous);
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to delete the client.');
+    }
   };
 
   const handleOpenClientModal = (client?: Client) => {
@@ -284,10 +322,16 @@ export default function TrackerApp() {
       }
     }
 
+    const previous = habits;
     setHabits((prev) =>
       prev.map((h) => (h.id === habitId ? { ...h, completedDates: nextDates, streak } : h))
     );
-    await dbUpdateHabit(habitId, { completedDates: nextDates, streak });
+    try {
+      await dbUpdateHabit(habitId, { completedDates: nextDates, streak });
+    } catch (err) {
+      setHabits(previous);
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to update the habit.');
+    }
   };
 
   const handleToggleHabitToday = (habitId: string) => {
@@ -295,39 +339,57 @@ export default function TrackerApp() {
   };
 
   const handleAddHabit = async (habitData: Partial<HabitItem>) => {
-    const created = await dbCreateHabit({
-      title: habitData.title || 'New Routine',
-      workspace: habitData.workspace || 'personal',
-      category: habitData.category || 'General',
-      frequency: 'daily',
-      targetDaysPerWeek: 7,
-      completedDates: [],
-      streak: 0,
-    });
-    setHabits((prev) => [...prev, created]);
+    try {
+      const created = await dbCreateHabit({
+        title: habitData.title || 'New Routine',
+        workspace: habitData.workspace || 'personal',
+        category: habitData.category || 'General',
+        frequency: 'daily',
+        targetDaysPerWeek: 7,
+        completedDates: [],
+        streak: 0,
+      });
+      setHabits((prev) => [...prev, created]);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to add the habit.');
+    }
   };
 
   const handleDeleteHabit = async (habitId: string) => {
+    const previous = habits;
     setHabits((prev) => prev.filter((h) => h.id !== habitId));
-    await dbDeleteHabit(habitId);
+    try {
+      await dbDeleteHabit(habitId);
+    } catch (err) {
+      setHabits(previous);
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to delete the habit.');
+    }
   };
 
   // Clear all workspace data
   const handleClearAllData = async () => {
     if (confirm('Clear all tasks, events, and clients for a fresh clean slate?')) {
-      const empty = await clearAllData();
-      setTasks(empty.tasks);
-      setClients(empty.clients);
-      setHabits(empty.habits);
+      try {
+        const empty = await clearAllData();
+        setTasks(empty.tasks);
+        setClients(empty.clients);
+        setHabits(empty.habits);
+      } catch (err) {
+        setErrorMessage(err instanceof Error ? err.message : 'Failed to clear data.');
+      }
     }
   };
 
   // Load sample demo data
   const handleLoadSampleData = async () => {
-    const samples = await loadSampleDemoData();
-    setTasks(samples.tasks);
-    setClients(samples.clients);
-    setHabits(samples.habits);
+    try {
+      const samples = await loadSampleDemoData();
+      setTasks(samples.tasks);
+      setClients(samples.clients);
+      setHabits(samples.habits);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to load sample data.');
+    }
   };
 
   // Counters for badges
@@ -520,6 +582,18 @@ export default function TrackerApp() {
 
         {/* Dynamic View Body */}
         <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-8 pb-28 md:pb-8 bg-neutral-50">
+          {errorMessage && (
+            <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-black bg-white px-4 py-3 text-sm text-black">
+              <span>⚠ {errorMessage}</span>
+              <button
+                onClick={() => setErrorMessage(null)}
+                className="shrink-0 text-xs font-semibold text-neutral-500 hover:text-black"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
           {activeView === 'dashboard' && (
             <DashboardView
               tasks={filteredTasks}
