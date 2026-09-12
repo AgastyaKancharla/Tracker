@@ -45,31 +45,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'list', label: 'Task Ledger', icon: <CheckSquare className="w-4 h-4" /> },
     { id: 'calendar', label: 'Calendar & Agenda', icon: <CalendarDays className="w-4 h-4" />, badge: eventsTodayCount > 0 ? `${eventsTodayCount} today` : undefined },
     { id: 'clients', label: 'Client Hub', icon: <Users2 className="w-4 h-4" />, badge: activeClientCount },
-    { id: 'habits', label: 'Habits & Routine', icon: <Flame className="w-4 h-4 text-orange-400" /> },
+    { id: 'habits', label: 'Habits & Routine', icon: <Flame className="w-4 h-4 text-neutral-500" /> },
   ];
 
   const workspaces: { id: WorkspaceType; label: string; icon: React.ReactNode; color: string; desc: string }[] = [
-    { id: 'all', label: 'All Operations', icon: <Sparkles className="w-3.5 h-3.5" />, color: 'text-slate-600', desc: 'Unified view' },
-    { id: 'personal', label: 'Personal Realm', icon: <User className="w-3.5 h-3.5" />, color: 'text-emerald-600', desc: 'Habits, health & home' },
-    { id: 'business', label: 'Business Hub', icon: <Briefcase className="w-3.5 h-3.5" />, color: 'text-indigo-600', desc: 'Revenue, operations & ops' },
-    { id: 'client', label: 'Client Projects', icon: <Building2 className="w-3.5 h-3.5" />, color: 'text-amber-600', desc: 'Deliverables & billing' },
+    { id: 'all', label: 'All Operations', icon: <Sparkles className="w-3.5 h-3.5" />, color: 'text-neutral-600', desc: 'Unified view' },
+    { id: 'personal', label: 'Personal Realm', icon: <User className="w-3.5 h-3.5" />, color: 'text-stone-600', desc: 'Habits, health & home' },
+    { id: 'business', label: 'Business Hub', icon: <Briefcase className="w-3.5 h-3.5" />, color: 'text-neutral-900', desc: 'Revenue, operations & ops' },
+    { id: 'client', label: 'Client Projects', icon: <Building2 className="w-3.5 h-3.5" />, color: 'text-zinc-700', desc: 'Deliverables & billing' },
   ];
 
   return (
-    <aside className="w-64 flex-shrink-0 border-r border-slate-200 bg-white flex flex-col h-screen select-none shadow-xs">
+    <aside className="w-64 flex-shrink-0 border-r border-neutral-200 bg-white flex flex-col h-screen select-none shadow-xs">
       {/* Brand / Title Header */}
-      <div className="p-4 border-b border-slate-200">
+      <div className="p-4 border-b border-neutral-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-sm text-white">
+            <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center shadow-sm text-white">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <span className="font-bold text-sm tracking-tight text-slate-900 flex items-center gap-1.5">
+              <span className="font-bold text-sm tracking-tight text-neutral-900 flex items-center gap-1.5">
                 ChronoTrack
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">PRO</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 text-black border border-neutral-300">PRO</span>
               </span>
-              <p className="text-[11px] text-slate-500">Personal • Business • Clients</p>
+              <p className="text-[11px] text-neutral-500">Personal • Business • Clients</p>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Main Views Navigation */}
       <div className="px-3 py-4 flex-1 overflow-y-auto space-y-6">
         <div>
-          <div className="px-3 pb-2 text-[10px] font-mono tracking-wider text-slate-400 uppercase">
+          <div className="px-3 pb-2 text-[10px] font-mono tracking-wider text-neutral-400 uppercase">
             Views
           </div>
           <nav className="space-y-1">
@@ -90,12 +90,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => onSelectView(item.id)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group ${
                     isActive
-                      ? 'bg-indigo-50 text-indigo-700 font-semibold shadow-2xs border border-indigo-100'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+                      ? 'bg-neutral-100 text-black font-semibold shadow-2xs border border-neutral-200'
+                      : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className={isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'}>
+                    <span className={isActive ? 'text-neutral-900' : 'text-neutral-400 group-hover:text-neutral-600'}>
                       {item.icon}
                     </span>
                     <span>{item.label}</span>
@@ -103,8 +103,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {item.badge && (
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
                       typeof item.badge === 'string'
-                        ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
-                        : 'bg-slate-100 text-slate-600'
+                        ? 'bg-neutral-200 text-black border border-neutral-300'
+                        : 'bg-neutral-100 text-neutral-600'
                     }`}>
                       {item.badge}
                     </span>
@@ -117,7 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Workspaces Filter */}
         <div>
-          <div className="px-3 pb-2 flex items-center justify-between text-[10px] font-mono tracking-wider text-slate-400 uppercase">
+          <div className="px-3 pb-2 flex items-center justify-between text-[10px] font-mono tracking-wider text-neutral-400 uppercase">
             <span>Workspaces</span>
           </div>
           <div className="space-y-1">
@@ -129,18 +129,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => onSelectWorkspace(ws.id)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all ${
                     isSelected
-                      ? 'bg-slate-100 text-slate-900 font-medium border border-slate-200 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? 'bg-neutral-100 text-neutral-900 font-medium border border-neutral-200 shadow-2xs'
+                      : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <span className={ws.color}>{ws.icon}</span>
                     <div className="text-left">
                       <div className="font-medium">{ws.label}</div>
-                      <div className="text-[10px] text-slate-400">{ws.desc}</div>
+                      <div className="text-[10px] text-neutral-400">{ws.desc}</div>
                     </div>
                   </div>
-                  {isSelected && <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
+                  {isSelected && <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />}
                 </button>
               );
             })}
@@ -148,39 +148,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Pulse / System Status Panel */}
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+        <div className="p-3 rounded-xl bg-neutral-50 border border-neutral-200 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-700 flex items-center gap-1.5">
-              <Clock className="w-3 h-3 text-indigo-600" />
+            <span className="text-[11px] font-medium text-neutral-700 flex items-center gap-1.5">
+              <Clock className="w-3 h-3 text-neutral-900" />
               Real-time Overview
             </span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-stone-500 animate-pulse" />
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="p-2 rounded-lg bg-white border border-slate-200 shadow-2xs">
-              <div className="text-sm font-bold text-rose-600 font-mono">{urgentCount}</div>
-              <div className="text-[10px] text-slate-500 uppercase">Urgent Items</div>
+            <div className="p-2 rounded-lg bg-white border border-neutral-200 shadow-2xs">
+              <div className="text-sm font-bold text-black font-mono">{urgentCount}</div>
+              <div className="text-[10px] text-neutral-500 uppercase">Urgent Items</div>
             </div>
-            <div className="p-2 rounded-lg bg-white border border-slate-200 shadow-2xs">
-              <div className="text-sm font-bold text-amber-600 font-mono">{eventsTodayCount}</div>
-              <div className="text-[10px] text-slate-500 uppercase">Events Today</div>
+            <div className="p-2 rounded-lg bg-white border border-neutral-200 shadow-2xs">
+              <div className="text-sm font-bold text-zinc-700 font-mono">{eventsTodayCount}</div>
+              <div className="text-[10px] text-neutral-500 uppercase">Events Today</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Command Palette Trigger in Footer */}
-      <div className="p-3 border-t border-slate-200 bg-slate-50/50">
+      <div className="p-3 border-t border-neutral-200 bg-neutral-50/50">
         <button
           onClick={onOpenCommandPalette}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-xs text-slate-700 transition-colors shadow-2xs group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white hover:bg-neutral-100 border border-neutral-200 text-xs text-neutral-700 transition-colors shadow-2xs group"
         >
           <div className="flex items-center gap-2">
-            <Command className="w-3.5 h-3.5 text-indigo-600" />
+            <Command className="w-3.5 h-3.5 text-neutral-900" />
             <span className="text-[11px] font-medium">Quick Command Palette</span>
           </div>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200 group-hover:text-slate-800">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-500 border border-neutral-200 group-hover:text-neutral-800">
             ⌘K
           </span>
         </button>

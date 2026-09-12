@@ -250,13 +250,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     <div className="space-y-4 animate-in fade-in duration-150">
       
       {/* Mobile Tab Switcher (Visible on small screens only) */}
-      <div className="flex lg:hidden items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs">
+      <div className="flex lg:hidden items-center p-1 bg-neutral-100 rounded-xl border border-neutral-200 text-xs">
         <button
           onClick={() => setMobileTab('calendar')}
           className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-1.5 ${
             mobileTab === 'calendar'
-              ? 'bg-white text-indigo-700 shadow-xs'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-black shadow-xs'
+              : 'text-neutral-600 hover:text-neutral-900'
           }`}
         >
           <CalendarIcon className="w-3.5 h-3.5" />
@@ -266,14 +266,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           onClick={() => setMobileTab('schedule')}
           className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-1.5 ${
             mobileTab === 'schedule'
-              ? 'bg-white text-indigo-700 shadow-xs'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-black shadow-xs'
+              : 'text-neutral-600 hover:text-neutral-900'
           }`}
         >
-          <Zap className="w-3.5 h-3.5 text-amber-500" />
+          <Zap className="w-3.5 h-3.5 text-zinc-600" />
           <span>Day Free-Time Map</span>
           {selectedDayTasks.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-mono font-bold">
+            <span className="px-1.5 py-0.2 rounded-full bg-neutral-200 text-black text-[10px] font-mono font-bold">
               {selectedDayTasks.length}
             </span>
           )}
@@ -286,12 +286,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         <div className={`lg:col-span-7 space-y-4 ${mobileTab === 'calendar' ? 'block' : 'hidden lg:block'}`}>
           
           {/* Month Navigation Header */}
-          <div className="flex items-center justify-between p-3.5 sm:p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+          <div className="flex items-center justify-between p-3.5 sm:p-4 bg-white border border-neutral-200 rounded-2xl shadow-xs">
             <div className="flex items-center gap-2.5">
-              <h2 className="text-base font-bold text-slate-900 tracking-tight">{monthName}</h2>
+              <h2 className="text-base font-bold text-neutral-900 tracking-tight">{monthName}</h2>
               <button
                 onClick={goToToday}
-                className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 font-mono font-medium transition-colors"
+                className="px-2.5 py-1 rounded-md bg-neutral-100 hover:bg-neutral-200 text-xs text-neutral-700 font-mono font-medium transition-colors"
               >
                 Today
               </button>
@@ -300,13 +300,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <div className="flex items-center gap-1">
               <button
                 onClick={prevMonth}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={nextMonth}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -314,11 +314,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
 
           {/* Calendar Grid Container */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 overflow-hidden shadow-xs">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-3 sm:p-4 overflow-hidden shadow-xs">
             {/* Day Names Header */}
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
               {daysOfWeek.map((day) => (
-                <div key={day} className="text-[11px] font-mono uppercase tracking-wider text-slate-400 py-1 font-semibold">
+                <div key={day} className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 py-1 font-semibold">
                   {day}
                 </div>
               ))}
@@ -339,21 +339,21 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     }}
                     className={`min-h-[85px] sm:min-h-[95px] p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between group ${
                       isSelected
-                        ? 'bg-indigo-50/70 border-indigo-500 shadow-xs ring-2 ring-indigo-500/20'
+                        ? 'bg-neutral-100/70 border-neutral-600 shadow-xs ring-2 ring-neutral-600/20'
                         : isTodayCell
-                        ? 'bg-indigo-50/20 border-indigo-400'
+                        ? 'bg-neutral-100/20 border-neutral-500'
                         : cell.isCurrentMonth
-                        ? 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/70'
-                        : 'bg-slate-50/50 border-slate-100 opacity-40 hover:opacity-75'
+                        ? 'bg-white border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50/70'
+                        : 'bg-neutral-50/50 border-neutral-100 opacity-40 hover:opacity-75'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className={`text-xs font-mono font-medium ${
                         isTodayCell 
-                          ? 'w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-2xs' 
+                          ? 'w-6 h-6 rounded-full bg-neutral-900 text-white flex items-center justify-center font-bold shadow-2xs' 
                           : isSelected 
-                          ? 'text-indigo-700 font-bold' 
-                          : 'text-slate-700'
+                          ? 'text-black font-bold' 
+                          : 'text-neutral-700'
                       }`}>
                         {cell.dayNum}
                       </span>
@@ -363,7 +363,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                           e.stopPropagation();
                           onOpenTaskModal(undefined, undefined, cell.dateString);
                         }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all hidden sm:block"
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-neutral-400 hover:text-neutral-800 hover:bg-neutral-100 transition-all hidden sm:block"
                         title="Add item on this day"
                       >
                         <Plus className="w-3 h-3" />
@@ -377,17 +377,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                           key={t.id}
                           className={`text-[9px] px-1.5 py-0.5 rounded truncate font-medium ${
                             t.workspace === 'personal'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              ? 'bg-stone-50 text-stone-700 border border-stone-200'
                               : t.workspace === 'business'
-                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                              : 'bg-amber-50 text-amber-800 border border-amber-200'
+                              ? 'bg-neutral-100 text-black border border-neutral-300'
+                              : 'bg-zinc-100 text-zinc-900 border border-zinc-300'
                           }`}
                         >
                           {t.isEvent ? `⏱ ${t.dueTime || 'Event'}` : t.title}
                         </div>
                       ))}
                       {cellTasks.length > 2 && (
-                        <div className="text-[9px] text-slate-500 font-mono px-0.5 font-medium">
+                        <div className="text-[9px] text-neutral-500 font-mono px-0.5 font-medium">
                           +{cellTasks.length - 2} more
                         </div>
                       )}
@@ -406,25 +406,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         <div className={`lg:col-span-5 space-y-4 ${mobileTab === 'schedule' ? 'block' : 'hidden lg:block'}`}>
           
           {/* Agenda Card */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-xs">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-neutral-200 space-y-4 shadow-xs">
             
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <CalendarIcon className="w-4 h-4 text-indigo-600" />
-                  <h3 className="text-sm font-bold text-slate-900">
+                  <CalendarIcon className="w-4 h-4 text-neutral-900" />
+                  <h3 className="text-sm font-bold text-neutral-900">
                     Schedule for {formatDate(selectedDate)}
                   </h3>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-[11px] text-neutral-500 mt-0.5">
                   {selectedDayTasks.length} item{selectedDayTasks.length === 1 ? '' : 's'} assigned to this day
                 </p>
               </div>
 
               <button
                 onClick={() => onOpenTaskModal(undefined, undefined, selectedDate)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-xs transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Item</span>
@@ -432,57 +432,57 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             </div>
 
             {/* Day Capacity & Free Time Utilization Meter */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+            <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 space-y-2.5">
               <div className="flex items-center justify-between text-xs font-mono">
-                <span className="text-slate-700 font-semibold flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-neutral-700 font-semibold flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-zinc-600" />
                   Day Time-Budget (08:00 - 22:00)
                 </span>
-                <span className="text-slate-500">14 hrs Window</span>
+                <span className="text-neutral-500">14 hrs Window</span>
               </div>
 
               {/* Visual Segmented Utilization Bar */}
-              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden flex">
+              <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden flex">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-amber-500 transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-neutral-900 via-neutral-500 to-neutral-300 transition-all duration-300"
                   style={{ width: `${percentOccupied}%` }}
                 />
                 <div
-                  className="h-full bg-emerald-500 transition-all duration-300"
+                  className="h-full bg-stone-500 transition-all duration-300"
                   style={{ width: `${100 - percentOccupied}%` }}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-center pt-1 font-mono text-[11px]">
-                <div className="p-2 rounded-lg bg-white border border-slate-200 shadow-2xs">
-                  <div className="text-slate-900 font-bold">{formatMinutes(totalOccupiedMinutes)}</div>
-                  <div className="text-[10px] text-indigo-700 font-medium uppercase">Occupied Time ({percentOccupied}%)</div>
+                <div className="p-2 rounded-lg bg-white border border-neutral-200 shadow-2xs">
+                  <div className="text-neutral-900 font-bold">{formatMinutes(totalOccupiedMinutes)}</div>
+                  <div className="text-[10px] text-black font-medium uppercase">Occupied Time ({percentOccupied}%)</div>
                 </div>
-                <div className="p-2 rounded-lg bg-white border border-slate-200 shadow-2xs">
-                  <div className="text-emerald-700 font-bold">{formatMinutes(totalFreeMinutes)}</div>
-                  <div className="text-[10px] text-emerald-700 font-medium uppercase">Available Free Time</div>
+                <div className="p-2 rounded-lg bg-white border border-neutral-200 shadow-2xs">
+                  <div className="text-stone-700 font-bold">{formatMinutes(totalFreeMinutes)}</div>
+                  <div className="text-[10px] text-stone-700 font-medium uppercase">Available Free Time</div>
                 </div>
               </div>
             </div>
 
             {/* Time Slots Explorer (Occupied vs Free Windows) */}
             <div className="space-y-2.5">
-              <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-slate-500 font-medium">
+              <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-neutral-500 font-medium">
                 <span>Time Slot Map & Available Windows</span>
               </div>
 
               {selectedDayTasks.length === 0 ? (
-                <div className="py-8 px-4 text-center border border-dashed border-emerald-300 bg-emerald-50/30 rounded-xl space-y-2">
-                  <Sparkles className="w-6 h-6 text-emerald-600 mx-auto" />
+                <div className="py-8 px-4 text-center border border-dashed border-stone-300 bg-stone-50/30 rounded-xl space-y-2">
+                  <Sparkles className="w-6 h-6 text-stone-600 mx-auto" />
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Entire Day is 100% Free!</h4>
-                    <p className="text-[11px] text-slate-600 mt-0.5">
+                    <h4 className="text-xs font-bold text-neutral-900">Entire Day is 100% Free!</h4>
+                    <p className="text-[11px] text-neutral-600 mt-0.5">
                       You have 14 full hours open (08:00 - 22:00) with zero scheduled commitments.
                     </p>
                   </div>
                   <button
                     onClick={() => onOpenTaskModal(undefined, undefined, selectedDate, undefined, '09:00')}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors mt-1"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-stone-600 hover:bg-stone-700 text-white text-xs font-semibold shadow-xs transition-colors mt-1"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Plan First Task at 09:00</span>
@@ -497,16 +497,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       return (
                         <div
                           key={`occ-${t.id}-${idx}`}
-                          className="p-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all space-y-1.5 shadow-2xs"
+                          className="p-3 rounded-xl bg-neutral-50 border border-neutral-200 hover:border-neutral-300 transition-all space-y-1.5 shadow-2xs"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 overflow-hidden">
-                              <span className="px-1.5 py-0.5 rounded font-mono text-[10px] bg-rose-50 text-rose-700 border border-rose-200 font-bold flex-shrink-0">
+                              <span className="px-1.5 py-0.5 rounded font-mono text-[10px] bg-neutral-100 text-black border border-neutral-300 font-bold flex-shrink-0">
                                 {block.startTimeStr} - {block.endTimeStr}
                               </span>
                               <span
                                 onClick={() => onEditTask(t)}
-                                className="text-xs font-bold text-slate-900 truncate cursor-pointer hover:text-indigo-600 transition-colors"
+                                className="text-xs font-bold text-neutral-900 truncate cursor-pointer hover:text-neutral-900 transition-colors"
                               >
                                 {t.title}
                               </span>
@@ -514,23 +514,23 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
                             <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded uppercase flex-shrink-0 font-medium ${
                               t.workspace === 'personal'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                ? 'bg-stone-50 text-stone-700 border border-stone-200'
                                 : t.workspace === 'business'
-                                ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                                : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                ? 'bg-neutral-100 text-black border border-neutral-300'
+                                : 'bg-zinc-100 text-zinc-900 border border-zinc-300'
                             }`}>
                               {t.workspace}
                             </span>
                           </div>
 
-                          <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-slate-500">
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-neutral-500">
                             <div className="flex items-center gap-2">
-                              <span className="text-amber-800 font-semibold flex items-center gap-1">
-                                <Timer className="w-3 h-3 text-amber-600" />
+                              <span className="text-zinc-900 font-semibold flex items-center gap-1">
+                                <Timer className="w-3 h-3 text-zinc-700" />
                                 {formatMinutes(block.durationMinutes)} occupied
                               </span>
                               {t.clientName && (
-                                <span className="text-amber-700">Client: {t.clientName}</span>
+                                <span className="text-zinc-800">Client: {t.clientName}</span>
                               )}
                             </div>
 
@@ -538,8 +538,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                               onClick={() => onToggleStatus(t.id)}
                               className={`px-2 py-0.5 rounded border transition-colors ${
                                 t.status === 'done'
-                                  ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-bold'
-                                  : 'bg-white border-slate-200 hover:border-emerald-500 text-slate-600'
+                                  ? 'bg-stone-50 border-stone-300 text-stone-700 font-bold'
+                                  : 'bg-white border-neutral-200 hover:border-stone-500 text-neutral-600'
                               }`}
                             >
                               {t.status === 'done' ? '✓ Finished' : 'Mark Done'}
@@ -553,14 +553,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     return (
                       <div
                         key={`free-${block.startTimeStr}-${idx}`}
-                        className="p-2.5 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/40 hover:bg-emerald-50/70 transition-all flex items-center justify-between group"
+                        className="p-2.5 rounded-xl border border-dashed border-stone-300 bg-stone-50/40 hover:bg-stone-50/70 transition-all flex items-center justify-between group"
                       >
                         <div className="flex items-center gap-2 font-mono text-xs">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-emerald-800 font-bold">
+                          <span className="w-2 h-2 rounded-full bg-stone-500 animate-pulse" />
+                          <span className="text-stone-800 font-bold">
                             {block.startTimeStr} - {block.endTimeStr}
                           </span>
-                          <span className="text-slate-500 text-[11px]">
+                          <span className="text-neutral-500 text-[11px]">
                             ({formatMinutes(block.durationMinutes)} Free Window)
                           </span>
                         </div>
@@ -575,7 +575,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                               block.startTimeStr
                             )
                           }
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition-all shadow-2xs"
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-stone-600 hover:bg-stone-700 text-white text-[11px] font-semibold transition-all shadow-2xs"
                         >
                           <Plus className="w-3 h-3" />
                           <span>Book Slot</span>
@@ -588,9 +588,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
               {/* Any Untimed Tasks for this day */}
               {untimedTasks.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-slate-200 space-y-2">
-                  <div className="text-[11px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1 font-semibold">
-                    <Clock className="w-3 h-3 text-slate-400" />
+                <div className="mt-3 pt-3 border-t border-neutral-200 space-y-2">
+                  <div className="text-[11px] font-mono text-neutral-500 uppercase tracking-wider flex items-center gap-1 font-semibold">
+                    <Clock className="w-3 h-3 text-neutral-400" />
                     <span>Due Today (Flexible Time / No Start Time Set)</span>
                   </div>
                   <div className="space-y-1.5">
@@ -598,17 +598,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       <div
                         key={t.id}
                         onClick={() => onEditTask(t)}
-                        className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-between text-xs cursor-pointer shadow-2xs"
+                        className="p-2.5 rounded-lg bg-neutral-50 border border-neutral-200 hover:border-neutral-300 transition-all flex items-center justify-between text-xs cursor-pointer shadow-2xs"
                       >
                         <div className="flex items-center gap-2 truncate">
                           <span className={`w-2 h-2 rounded-full ${
-                            t.workspace === 'personal' ? 'bg-emerald-500' : t.workspace === 'business' ? 'bg-indigo-500' : 'bg-amber-500'
+                            t.workspace === 'personal' ? 'bg-stone-500' : t.workspace === 'business' ? 'bg-neutral-600' : 'bg-zinc-600'
                           }`} />
-                          <span className="text-slate-900 truncate font-semibold">{t.title}</span>
+                          <span className="text-neutral-900 truncate font-semibold">{t.title}</span>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0 font-mono text-[10px] text-amber-800">
+                        <div className="flex items-center gap-2 flex-shrink-0 font-mono text-[10px] text-zinc-900">
                           {t.estimatedHours && <span>⏱️ {formatDuration(t.estimatedHours)}</span>}
-                          <span className="text-slate-400">Edit Time →</span>
+                          <span className="text-neutral-400">Edit Time →</span>
                         </div>
                       </div>
                     ))}
@@ -620,9 +620,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               <div className="pt-2">
                 <button
                   onClick={() => onOpenTaskModal(undefined, undefined, selectedDate)}
-                  className="w-full py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs text-slate-700 font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  className="w-full py-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 text-xs text-neutral-700 font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                 >
-                  <Plus className="w-3.5 h-3.5 text-indigo-600" />
+                  <Plus className="w-3.5 h-3.5 text-neutral-900" />
                   <span>Add Task or Event for {formatDate(selectedDate)}</span>
                 </button>
               </div>
