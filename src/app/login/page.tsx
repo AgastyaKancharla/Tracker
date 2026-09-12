@@ -31,10 +31,16 @@ export default function LoginPage() {
       router.push('/');
       router.refresh();
     } else {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ email, password });
       setLoading(false);
       if (error) {
         setError(error.message);
+        return;
+      }
+      if (data.session) {
+        // Email confirmation is disabled — the account is signed in immediately.
+        router.push('/');
+        router.refresh();
         return;
       }
       setMessage('Account created. Check your email to confirm, then sign in.');
