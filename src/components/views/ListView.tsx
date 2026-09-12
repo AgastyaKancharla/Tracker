@@ -76,28 +76,28 @@ export const ListView: React.FC<ListViewProps> = ({
     <div className="space-y-4 animate-in fade-in duration-150">
       
       {/* Control / Sort Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm">
-        <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
-          <span className="text-slate-400 font-mono">Ledger Count:</span>
-          <span className="font-semibold text-slate-900">{tasks.length} items</span>
-          <span className="text-slate-300">•</span>
-          <span className="text-emerald-600 font-mono font-semibold">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white border border-neutral-200 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2 text-xs text-neutral-600 font-medium">
+          <span className="text-neutral-400 font-mono">Ledger Count:</span>
+          <span className="font-semibold text-neutral-900">{tasks.length} items</span>
+          <span className="text-neutral-300">•</span>
+          <span className="text-stone-600 font-mono font-semibold">
             {tasks.filter(t => t.status === 'done').length} Done
           </span>
-          <span className="text-slate-300">•</span>
-          <span className="text-amber-600 font-mono font-semibold">
+          <span className="text-neutral-300">•</span>
+          <span className="text-zinc-700 font-mono font-semibold">
             {tasks.filter(t => t.status !== 'done').length} Active
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-600">
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-400">Sort:</span>
+          <div className="flex items-center gap-1.5 bg-neutral-50 px-2.5 py-1.5 rounded-lg border border-neutral-200 text-xs text-neutral-600">
+            <ArrowUpDown className="w-3.5 h-3.5 text-neutral-400" />
+            <span className="text-neutral-400">Sort:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-transparent text-slate-800 font-medium focus:outline-none cursor-pointer"
+              className="bg-transparent text-neutral-800 font-medium focus:outline-none cursor-pointer"
             >
               <option value="deadline">⏱️ Deadline (Nearest First)</option>
               <option value="priority">🔴 Priority</option>
@@ -108,7 +108,7 @@ export const ListView: React.FC<ListViewProps> = ({
 
           <button
             onClick={() => onOpenTaskModal()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-sm transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Item</span>
@@ -119,7 +119,7 @@ export const ListView: React.FC<ListViewProps> = ({
       {/* Mobile Touch-Friendly Card Feed (md:hidden) */}
       <div className="md:hidden space-y-3">
         {sortedTasks.length === 0 ? (
-          <div className="p-8 text-center bg-white border border-slate-200 rounded-2xl text-slate-400 text-xs">
+          <div className="p-8 text-center bg-white border border-neutral-200 rounded-2xl text-neutral-400 text-xs">
             No tasks or events found. Tap &quot;Add Item&quot; to schedule your first deliverable.
           </div>
         ) : (
@@ -130,8 +130,8 @@ export const ListView: React.FC<ListViewProps> = ({
             return (
               <div
                 key={task.id}
-                className={`p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2.5 transition-all ${
-                  isCompleted ? 'opacity-60 bg-slate-50/70' : ''
+                className={`p-3.5 rounded-2xl bg-white border border-neutral-200 shadow-sm space-y-2.5 transition-all ${
+                  isCompleted ? 'opacity-60 bg-neutral-50/70' : ''
                 }`}
               >
                 <div className="flex items-start justify-between gap-2.5">
@@ -140,8 +140,8 @@ export const ListView: React.FC<ListViewProps> = ({
                       onClick={() => onToggleStatus(task.id)}
                       className={`w-5 h-5 mt-0.5 rounded-md border flex items-center justify-center transition-all flex-shrink-0 ${
                         isCompleted
-                          ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm'
-                          : 'border-slate-300 hover:border-emerald-500 text-transparent'
+                          ? 'bg-stone-500 border-stone-500 text-white shadow-sm'
+                          : 'border-neutral-300 hover:border-stone-500 text-transparent'
                       }`}
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -150,25 +150,25 @@ export const ListView: React.FC<ListViewProps> = ({
                     <div className="min-w-0 flex-1 cursor-pointer" onClick={() => onEditTask(task)}>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className={`text-sm font-semibold leading-snug ${
-                          isCompleted ? 'line-through text-slate-400' : 'text-slate-900'
+                          isCompleted ? 'line-through text-neutral-400' : 'text-neutral-900'
                         }`}>
                           {task.title}
                         </span>
                         {task.isEvent && (
-                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 text-black border border-neutral-300 font-semibold">
                             MEETING
                           </span>
                         )}
                       </div>
 
                       {task.description && (
-                        <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-neutral-500 mt-1 line-clamp-2 leading-relaxed">
                           {task.description}
                         </p>
                       )}
 
                       {task.clientName && (
-                        <span className="inline-block text-[10px] text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded mt-1">
+                        <span className="inline-block text-[10px] text-zinc-800 font-semibold bg-zinc-100 border border-zinc-300 px-1.5 py-0.5 rounded mt-1">
                           Client: {task.clientName}
                         </span>
                       )}
@@ -179,14 +179,14 @@ export const ListView: React.FC<ListViewProps> = ({
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       onClick={() => onEditTask(task)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
                       title="Edit"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => onDeleteTask(task.id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      className="p-1.5 rounded-lg text-neutral-400 hover:text-black hover:bg-neutral-100 transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -201,7 +201,7 @@ export const ListView: React.FC<ListViewProps> = ({
                   </div>
 
                   {task.estimatedHours && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-mono font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-800 border border-zinc-300 text-[10px] font-mono font-medium">
                       <Timer className="w-3 h-3" />
                       {formatDuration(task.estimatedHours)}
                     </span>
@@ -209,34 +209,34 @@ export const ListView: React.FC<ListViewProps> = ({
 
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-mono text-[10px] uppercase font-semibold ${
                     task.workspace === 'personal'
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      ? 'bg-stone-50 text-stone-700 border border-stone-200'
                       : task.workspace === 'business'
-                      ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                      ? 'bg-neutral-100 text-black border border-neutral-300'
+                      : 'bg-zinc-100 text-zinc-800 border border-zinc-300'
                   }`}>
                     {task.workspace}
                   </span>
 
                   <span className={`inline-block px-2 py-0.5 rounded-md font-mono text-[10px] uppercase font-semibold ${
                     task.priority === 'urgent'
-                      ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                      ? 'bg-neutral-100 text-black border border-neutral-300'
                       : task.priority === 'high'
-                      ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                      ? 'bg-neutral-100 text-neutral-800 border border-neutral-300'
                       : task.priority === 'medium'
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'bg-slate-100 text-slate-600 border border-slate-200'
+                      ? 'bg-neutral-100 text-neutral-700 border border-neutral-300'
+                      : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
                   }`}>
                     {task.priority}
                   </span>
                 </div>
 
                 {/* Mobile Workflow State Switcher */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400 font-mono">Status:</span>
+                <div className="pt-2 border-t border-neutral-100 flex items-center justify-between">
+                  <span className="text-[11px] text-neutral-400 font-mono">Status:</span>
                   <select
                     value={task.status}
                     onChange={(e) => onUpdateStatus(task.id, e.target.value as TaskStatus)}
-                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium focus:outline-none focus:border-indigo-500"
+                    className="bg-neutral-50 border border-neutral-200 rounded-lg px-2 py-1 text-xs text-neutral-700 font-medium focus:outline-none focus:border-neutral-600"
                   >
                     <option value="in_progress">⚡ In Progress</option>
                     <option value="todo">📋 To Do</option>
@@ -252,11 +252,11 @@ export const ListView: React.FC<ListViewProps> = ({
       </div>
 
       {/* Desktop Ledger Table Container (hidden md:block) */}
-      <div className="hidden md:block rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+      <div className="hidden md:block rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80 text-slate-500 font-mono uppercase text-[10px] tracking-wider">
+              <tr className="border-b border-neutral-200 bg-neutral-50/80 text-neutral-500 font-mono uppercase text-[10px] tracking-wider">
                 <th className="py-3 px-4 w-12 text-center">Done</th>
                 <th className="py-3 px-4 min-w-[240px]">What is it? (Item & Scope)</th>
                 <th className="py-3 px-4 min-w-[190px]">Target Deadline & Countdown</th>
@@ -267,10 +267,10 @@ export const ListView: React.FC<ListViewProps> = ({
                 <th className="py-3 px-4 w-20 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-neutral-100">
               {sortedTasks.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-14 text-center text-slate-400">
+                  <td colSpan={8} className="py-14 text-center text-neutral-400">
                     No tasks or events found. Click &quot;Add Item&quot; to schedule your first deliverable.
                   </td>
                 </tr>
@@ -282,8 +282,8 @@ export const ListView: React.FC<ListViewProps> = ({
                   return (
                     <tr
                       key={task.id}
-                      className={`hover:bg-slate-50/80 transition-colors group ${
-                        isCompleted ? 'opacity-60 bg-slate-50/40' : ''
+                      className={`hover:bg-neutral-50/80 transition-colors group ${
+                        isCompleted ? 'opacity-60 bg-neutral-50/40' : ''
                       }`}
                     >
                       {/* Checkbox toggle */}
@@ -292,8 +292,8 @@ export const ListView: React.FC<ListViewProps> = ({
                           onClick={() => onToggleStatus(task.id)}
                           className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all mx-auto ${
                             isCompleted
-                              ? 'bg-emerald-500 border-emerald-500 text-white'
-                              : 'border-slate-300 hover:border-emerald-500 text-transparent hover:text-emerald-600'
+                              ? 'bg-stone-500 border-stone-500 text-white'
+                              : 'border-neutral-300 hover:border-stone-500 text-transparent hover:text-stone-600'
                           }`}
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
@@ -304,12 +304,12 @@ export const ListView: React.FC<ListViewProps> = ({
                       <td className="py-3 px-4 cursor-pointer" onClick={() => onEditTask(task)}>
                         <div className="flex items-center gap-2">
                           <span className={`font-semibold ${
-                            isCompleted ? 'line-through text-slate-400' : 'text-slate-900'
+                            isCompleted ? 'line-through text-neutral-400' : 'text-neutral-900'
                           }`}>
                             {task.title}
                           </span>
                           {task.isEvent && (
-                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 text-black border border-neutral-300 font-semibold">
                               MEETING
                             </span>
                           )}
@@ -317,12 +317,12 @@ export const ListView: React.FC<ListViewProps> = ({
 
                         <div className="flex items-center gap-2 mt-1">
                           {task.description && (
-                            <span className="text-[11px] text-slate-500 truncate max-w-xs">
+                            <span className="text-[11px] text-neutral-500 truncate max-w-xs">
                               {task.description}
                             </span>
                           )}
                           {task.clientName && (
-                            <span className="text-[10px] text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded">
+                            <span className="text-[10px] text-zinc-800 font-semibold bg-zinc-100 border border-zinc-300 px-1.5 py-0.2 rounded">
                               Client: {task.clientName}
                             </span>
                           )}
@@ -331,7 +331,7 @@ export const ListView: React.FC<ListViewProps> = ({
                         {task.tags && task.tags.length > 0 && (
                           <div className="flex items-center gap-1.5 mt-1.5">
                             {task.tags.map((t) => (
-                              <span key={t} className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                              <span key={t} className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 text-neutral-600 border border-neutral-200">
                                 #{t}
                               </span>
                             ))}
@@ -345,7 +345,7 @@ export const ListView: React.FC<ListViewProps> = ({
                           <span>{deadline.badgeText}</span>
                         </div>
                         {task.dueDate && task.dueTime && (
-                          <div className="text-[10px] text-slate-500 font-mono mt-0.5 flex items-center gap-1">
+                          <div className="text-[10px] text-neutral-500 font-mono mt-0.5 flex items-center gap-1">
                             <Clock className="w-3 h-3" /> Target time: {task.dueTime}
                           </div>
                         )}
@@ -354,12 +354,12 @@ export const ListView: React.FC<ListViewProps> = ({
                       {/* Duration / Effort */}
                       <td className="py-3 px-4 font-mono text-[11px]">
                         {task.estimatedHours ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-medium">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-100 text-zinc-800 border border-zinc-300 font-medium">
                             <Timer className="w-3 h-3" />
                             {formatDuration(task.estimatedHours)}
                           </span>
                         ) : (
-                          <span className="text-slate-300">--</span>
+                          <span className="text-neutral-300">--</span>
                         )}
                       </td>
 
@@ -367,10 +367,10 @@ export const ListView: React.FC<ListViewProps> = ({
                       <td className="py-3 px-4">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-mono text-[10px] uppercase font-semibold ${
                           task.workspace === 'personal'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            ? 'bg-stone-50 text-stone-700 border border-stone-200'
                             : task.workspace === 'business'
-                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            ? 'bg-neutral-100 text-black border border-neutral-300'
+                            : 'bg-zinc-100 text-zinc-800 border border-zinc-300'
                         }`}>
                           {task.workspace === 'personal' && <User className="w-3 h-3" />}
                           {task.workspace === 'business' && <Briefcase className="w-3 h-3" />}
@@ -383,12 +383,12 @@ export const ListView: React.FC<ListViewProps> = ({
                       <td className="py-3 px-4">
                         <span className={`inline-block px-2 py-0.5 rounded font-mono text-[10px] uppercase font-semibold ${
                           task.priority === 'urgent'
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            ? 'bg-neutral-100 text-black border border-neutral-300'
                             : task.priority === 'high'
-                            ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                            ? 'bg-neutral-100 text-neutral-800 border border-neutral-300'
                             : task.priority === 'medium'
-                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                            : 'bg-slate-100 text-slate-600 border border-slate-200'
+                            ? 'bg-neutral-100 text-neutral-700 border border-neutral-300'
+                            : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
                         }`}>
                           {task.priority}
                         </span>
@@ -399,7 +399,7 @@ export const ListView: React.FC<ListViewProps> = ({
                         <select
                           value={task.status}
                           onChange={(e) => onUpdateStatus(task.id, e.target.value as TaskStatus)}
-                          className="bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-[11px] text-slate-700 font-medium focus:outline-none focus:border-indigo-500 cursor-pointer"
+                          className="bg-neutral-50 border border-neutral-200 rounded-md px-2 py-1 text-[11px] text-neutral-700 font-medium focus:outline-none focus:border-neutral-600 cursor-pointer"
                         >
                           <option value="in_progress">⚡ In Progress</option>
                           <option value="todo">📋 To Do</option>
@@ -414,14 +414,14 @@ export const ListView: React.FC<ListViewProps> = ({
                         <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => onEditTask(task)}
-                            className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                            className="p-1 rounded text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
                             title="Edit"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => onDeleteTask(task.id)}
-                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            className="p-1 rounded text-neutral-400 hover:text-black hover:bg-neutral-100 transition-colors"
                             title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />

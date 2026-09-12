@@ -119,7 +119,7 @@ function clientToRow(client: Partial<Client>, userId: string) {
     phone: client.phone ?? null,
     status: client.status,
     rate: client.rate ?? '',
-    color: client.color ?? '#6366F1',
+    color: client.color ?? '#171717',
     notes: client.notes ?? '',
     total_budget: client.totalBudget ?? null,
   };

@@ -244,7 +244,7 @@ export default function TrackerApp() {
         status: clientData.status || 'active',
         rate: clientData.rate || '$150/hr',
         totalBudget: clientData.totalBudget,
-        color: clientData.color || '#6366F1',
+        color: clientData.color || '#171717',
         notes: clientData.notes || '',
       });
       setClients((prev) => [...prev, created]);
@@ -345,14 +345,14 @@ export default function TrackerApp() {
 
   if (!isLoaded) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-slate-50 text-slate-600 font-mono text-xs">
+      <div className="h-screen w-screen flex items-center justify-center bg-neutral-50 text-neutral-600 font-mono text-xs">
         Loading ChronoTrack System...
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-800 overflow-hidden font-sans">
+    <div className="flex h-screen bg-neutral-50 text-neutral-800 overflow-hidden font-sans">
       
       {/* Desktop Sidebar */}
       <div className="hidden md:flex">
@@ -372,13 +372,13 @@ export default function TrackerApp() {
       {isMobileSidebarOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden animate-in fade-in duration-150">
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
+            className="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs"
             onClick={() => setIsMobileSidebarOpen(false)}
           />
-          <div className="relative z-10 w-72 h-full bg-white border-r border-slate-200 shadow-2xl flex flex-col">
+          <div className="relative z-10 w-72 h-full bg-white border-r border-neutral-200 shadow-2xl flex flex-col">
             <button
               onClick={() => setIsMobileSidebarOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 z-20"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 z-20"
             >
               <X className="w-5 h-5" />
             </button>
@@ -409,24 +409,24 @@ export default function TrackerApp() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         {/* Mobile Top Bar */}
-        <div className="md:hidden flex flex-col border-b border-slate-200 bg-white/95 backdrop-blur-md px-3 py-2.5 shadow-2xs">
+        <div className="md:hidden flex flex-col border-b border-neutral-200 bg-white/95 backdrop-blur-md px-3 py-2.5 shadow-2xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsMobileSidebarOpen(true)}
-                className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                className="p-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
                 title="Open menu"
               >
                 <Menu className="w-5 h-5" />
               </button>
               <div className="flex items-center gap-1.5">
-                <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                <div className="w-7 h-7 rounded-lg bg-neutral-900 text-white flex items-center justify-center shadow-xs">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-slate-900 flex items-center gap-1">
+                  <span className="text-xs font-bold text-neutral-900 flex items-center gap-1">
                     ChronoTrack
-                    <span className="text-[9px] font-mono px-1 py-0.1 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">PRO</span>
+                    <span className="text-[9px] font-mono px-1 py-0.1 rounded bg-neutral-100 text-black border border-neutral-300">PRO</span>
                   </span>
                 </div>
               </div>
@@ -435,14 +435,14 @@ export default function TrackerApp() {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setIsCommandPaletteOpen(true)}
-                className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                className="p-2 rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
                 title="Search / Command (⌘K)"
               >
                 <Search className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleOpenTaskModal()}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold shadow-xs hover:bg-indigo-700 transition-all active:scale-95"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-semibold shadow-xs hover:bg-black transition-all active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>New</span>
@@ -456,8 +456,8 @@ export default function TrackerApp() {
               onClick={() => setCurrentWorkspace('all')}
               className={`px-2.5 py-1 rounded-full whitespace-nowrap text-[11px] font-medium transition-all ${
                 currentWorkspace === 'all'
-                  ? 'bg-slate-900 text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
+                  ? 'bg-neutral-900 text-white shadow-2xs'
+                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200/80'
               }`}
             >
               All ({taskCounts.all})
@@ -466,8 +466,8 @@ export default function TrackerApp() {
               onClick={() => setCurrentWorkspace('personal')}
               className={`px-2.5 py-1 rounded-full whitespace-nowrap text-[11px] font-medium transition-all ${
                 currentWorkspace === 'personal'
-                  ? 'bg-emerald-600 text-white shadow-2xs'
-                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200/70 hover:bg-emerald-100/60'
+                  ? 'bg-stone-600 text-white shadow-2xs'
+                  : 'bg-stone-50 text-stone-700 border border-stone-200/70 hover:bg-stone-100/60'
               }`}
             >
               Personal ({taskCounts.personal})
@@ -476,8 +476,8 @@ export default function TrackerApp() {
               onClick={() => setCurrentWorkspace('business')}
               className={`px-2.5 py-1 rounded-full whitespace-nowrap text-[11px] font-medium transition-all ${
                 currentWorkspace === 'business'
-                  ? 'bg-indigo-600 text-white shadow-2xs'
-                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200/70 hover:bg-indigo-100/60'
+                  ? 'bg-neutral-900 text-white shadow-2xs'
+                  : 'bg-neutral-100 text-black border border-neutral-300/70 hover:bg-neutral-200/60'
               }`}
             >
               Business ({taskCounts.business})
@@ -486,8 +486,8 @@ export default function TrackerApp() {
               onClick={() => setCurrentWorkspace('client')}
               className={`px-2.5 py-1 rounded-full whitespace-nowrap text-[11px] font-medium transition-all ${
                 currentWorkspace === 'client'
-                  ? 'bg-amber-600 text-white shadow-2xs'
-                  : 'bg-amber-50 text-amber-800 border border-amber-200/70 hover:bg-amber-100/60'
+                  ? 'bg-zinc-700 text-white shadow-2xs'
+                  : 'bg-zinc-100 text-zinc-900 border border-zinc-300/70 hover:bg-zinc-200/60'
               }`}
             >
               Clients ({taskCounts.client})
@@ -519,7 +519,7 @@ export default function TrackerApp() {
         </div>
 
         {/* Dynamic View Body */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-8 pb-28 md:pb-8 bg-slate-50">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-8 pb-28 md:pb-8 bg-neutral-50">
           {activeView === 'dashboard' && (
             <DashboardView
               tasks={filteredTasks}
@@ -620,13 +620,13 @@ export default function TrackerApp() {
       />
 
       {/* Mobile Fixed Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200 px-3 py-1.5 flex items-center justify-around pb-safe shadow-lg">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-neutral-200 px-3 py-1.5 flex items-center justify-around pb-safe shadow-lg">
         <button
           onClick={() => setActiveView('dashboard')}
           className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
             activeView === 'dashboard'
-              ? 'text-indigo-600 font-bold'
-              : 'text-slate-500 hover:text-slate-900'
+              ? 'text-neutral-900 font-bold'
+              : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
           <LayoutDashboard className="w-5 h-5" />
@@ -637,13 +637,13 @@ export default function TrackerApp() {
           onClick={() => setActiveView('calendar')}
           className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl relative transition-all ${
             activeView === 'calendar'
-              ? 'text-indigo-600 font-bold'
-              : 'text-slate-500 hover:text-slate-900'
+              ? 'text-neutral-900 font-bold'
+              : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
           <CalendarDays className="w-5 h-5" />
           {eventsTodayCount > 0 && (
-            <span className="absolute top-1 right-2.5 w-2 h-2 rounded-full bg-indigo-600" />
+            <span className="absolute top-1 right-2.5 w-2 h-2 rounded-full bg-neutral-900" />
           )}
           <span className="text-[10px] mt-0.5">Calendar</span>
         </button>
@@ -651,21 +651,21 @@ export default function TrackerApp() {
         {/* Center Thumb Floating + Quick Add Action */}
         <button
           onClick={() => handleOpenTaskModal()}
-          className="flex flex-col items-center justify-center -translate-y-3.5 focus:outline-none group"
+          className="flex flex-col items-center justify-center -tranneutral-y-3.5 focus:outline-none group"
           title="New Item"
         >
-          <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/35 hover:bg-indigo-700 active:scale-95 transition-all">
+          <div className="w-12 h-12 rounded-full bg-neutral-900 text-white flex items-center justify-center shadow-lg shadow-neutral-900/35 hover:bg-black active:scale-95 transition-all">
             <Plus className="w-6 h-6 stroke-[2.5]" />
           </div>
-          <span className="text-[10px] font-semibold text-slate-700 mt-0.5">Add</span>
+          <span className="text-[10px] font-semibold text-neutral-700 mt-0.5">Add</span>
         </button>
 
         <button
           onClick={() => setActiveView('kanban')}
           className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
             activeView === 'kanban'
-              ? 'text-indigo-600 font-bold'
-              : 'text-slate-500 hover:text-slate-900'
+              ? 'text-neutral-900 font-bold'
+              : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
           <KanbanSquare className="w-5 h-5" />
@@ -676,8 +676,8 @@ export default function TrackerApp() {
           onClick={() => setIsMobileSidebarOpen(true)}
           className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
             activeView === 'list' || activeView === 'clients' || activeView === 'habits'
-              ? 'text-indigo-600 font-bold'
-              : 'text-slate-500 hover:text-slate-900'
+              ? 'text-neutral-900 font-bold'
+              : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
           <Menu className="w-5 h-5" />

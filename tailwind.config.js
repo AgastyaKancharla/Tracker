@@ -17,9 +17,9 @@ module.exports = {
           hover: 'rgba(255, 255, 255, 0.04)',
         },
         brand: {
-          personal: '#10B981', // Emerald
-          business: '#6366F1', // Indigo
-          client: '#F59E0B',   // Amber
+          personal: '#78716C', // stone-500
+          business: '#171717', // neutral-900
+          client: '#52525B',   // zinc-600
         }
       },
       fontFamily: {
