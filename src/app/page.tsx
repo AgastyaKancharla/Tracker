@@ -11,16 +11,22 @@ import {
   TaskPriority, 
   TaskStatus 
 } from '@/types';
-import { 
-  loadTasks, 
-  saveTasks, 
-  loadClients, 
-  saveClients, 
-  loadHabits, 
-  saveHabits, 
+import {
+  loadAll,
+  createTask as dbCreateTask,
+  updateTask as dbUpdateTask,
+  deleteTask as dbDeleteTask,
+  createClientRecord,
+  updateClientRecord,
+  deleteClientRecord,
+  createHabit as dbCreateHabit,
+  updateHabit as dbUpdateHabit,
+  deleteHabit as dbDeleteHabit,
   clearAllData,
-  loadSampleDemoData
-} from '@/lib/storage';
+  loadSampleDemoData,
+} from '@/lib/db';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/common/Header';
 import { Sidebar } from '@/components/common/Sidebar';
 import { CommandPalette } from '@/components/common/CommandPalette';
@@ -48,10 +54,12 @@ import {
 } from 'lucide-react';
 
 export default function TrackerApp() {
+  const router = useRouter();
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [habits, setHabits] = useState<HabitItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   // Active view & filtering states
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
@@ -75,26 +83,29 @@ export default function TrackerApp() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Load data from localStorage on mount (starts completely empty by default)
+  // Load data from Supabase on mount
   useEffect(() => {
-    setTasks(loadTasks());
-    setClients(loadClients());
-    setHabits(loadHabits());
-    setIsLoaded(true);
+    (async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUserEmail(user?.email ?? null);
+
+      const { tasks, clients, habits } = await loadAll();
+      setTasks(tasks);
+      setClients(clients);
+      setHabits(habits);
+      setIsLoaded(true);
+    })();
   }, []);
 
-  // Sync to localStorage
-  useEffect(() => {
-    if (isLoaded) saveTasks(tasks);
-  }, [tasks, isLoaded]);
-
-  useEffect(() => {
-    if (isLoaded) saveClients(clients);
-  }, [clients, isLoaded]);
-
-  useEffect(() => {
-    if (isLoaded) saveHabits(habits);
-  }, [habits, isLoaded]);
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  };
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -137,16 +148,14 @@ export default function TrackerApp() {
   });
 
   // Task Actions
-  const handleSaveTask = (taskData: Partial<TaskItem>) => {
+  const handleSaveTask = async (taskData: Partial<TaskItem>) => {
     if (taskData.id) {
       // Edit existing
-      setTasks((prev) =>
-        prev.map((t) => (t.id === taskData.id ? ({ ...t, ...taskData } as TaskItem) : t))
-      );
+      const updated = await dbUpdateTask(taskData.id, taskData);
+      setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
     } else {
       // Create new
-      const newTask: TaskItem = {
-        id: `t-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      const created = await dbCreateTask({
         title: taskData.title || 'Untitled Item',
         description: taskData.description || '',
         workspace: taskData.workspace || 'personal',
@@ -161,45 +170,34 @@ export default function TrackerApp() {
         eventDurationMinutes: taskData.eventDurationMinutes,
         location: taskData.location,
         estimatedHours: taskData.estimatedHours,
-        createdAt: getTodayString(),
-      };
-      setTasks((prev) => [newTask, ...prev]);
+      });
+      setTasks((prev) => [created, ...prev]);
     }
     setEditingTask(null);
   };
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = async (taskId: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    await dbDeleteTask(taskId);
   };
 
-  const handleToggleTaskStatus = (taskId: string) => {
+  const handleToggleTaskStatus = async (taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const nextStatus: TaskStatus = task.status === 'done' ? 'todo' : 'done';
+    const completedAt = nextStatus === 'done' ? getTodayString() : undefined;
     setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id === taskId) {
-          const nextStatus: TaskStatus = t.status === 'done' ? 'todo' : 'done';
-          return {
-            ...t,
-            status: nextStatus,
-            completedAt: nextStatus === 'done' ? getTodayString() : undefined,
-          };
-        }
-        return t;
-      })
+      prev.map((t) => (t.id === taskId ? { ...t, status: nextStatus, completedAt } : t))
     );
+    await dbUpdateTask(taskId, { status: nextStatus, completedAt });
   };
 
-  const handleUpdateTaskStatus = (taskId: string, newStatus: TaskStatus) => {
+  const handleUpdateTaskStatus = async (taskId: string, newStatus: TaskStatus) => {
+    const completedAt = newStatus === 'done' ? getTodayString() : undefined;
     setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              status: newStatus,
-              completedAt: newStatus === 'done' ? getTodayString() : undefined,
-            }
-          : t
-      )
+      prev.map((t) => (t.id === taskId ? { ...t, status: newStatus, completedAt } : t))
     );
+    await dbUpdateTask(taskId, { status: newStatus, completedAt });
   };
 
   const handleOpenTaskModal = (
@@ -226,11 +224,10 @@ export default function TrackerApp() {
   };
 
   // Client Actions
-  const handleSaveClient = (clientData: Partial<Client>) => {
+  const handleSaveClient = async (clientData: Partial<Client>) => {
     if (clientData.id) {
-      setClients((prev) =>
-        prev.map((c) => (c.id === clientData.id ? ({ ...c, ...clientData } as Client) : c))
-      );
+      const updated = await updateClientRecord(clientData.id, clientData);
+      setClients((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       if (clientData.company) {
         setTasks((prev) =>
           prev.map((t) =>
@@ -239,8 +236,7 @@ export default function TrackerApp() {
         );
       }
     } else {
-      const newClient: Client = {
-        id: `c-${Date.now()}`,
+      const created = await createClientRecord({
         name: clientData.name || clientData.company || 'New Client',
         company: clientData.company || 'Client Co',
         email: clientData.email || '',
@@ -250,15 +246,15 @@ export default function TrackerApp() {
         totalBudget: clientData.totalBudget,
         color: clientData.color || '#6366F1',
         notes: clientData.notes || '',
-        createdAt: getTodayString(),
-      };
-      setClients((prev) => [...prev, newClient]);
+      });
+      setClients((prev) => [...prev, created]);
     }
     setEditingClient(null);
   };
 
-  const handleDeleteClient = (clientId: string) => {
+  const handleDeleteClient = async (clientId: string) => {
     setClients((prev) => prev.filter((c) => c.id !== clientId));
+    await deleteClientRecord(clientId);
   };
 
   const handleOpenClientModal = (client?: Client) => {
@@ -267,41 +263,39 @@ export default function TrackerApp() {
   };
 
   // Habit Actions
-  const handleToggleHabitDate = (habitId: string, dateStr: string) => {
+  const handleToggleHabitDate = async (habitId: string, dateStr: string) => {
+    const habit = habits.find((h) => h.id === habitId);
+    if (!habit) return;
+
+    const exists = habit.completedDates.includes(dateStr);
+    const nextDates = exists
+      ? habit.completedDates.filter((d) => d !== dateStr)
+      : [...habit.completedDates, dateStr];
+
+    let streak = 0;
+    let checkDate = new Date();
+    while (true) {
+      const checkStr = checkDate.toISOString().split('T')[0];
+      if (nextDates.includes(checkStr)) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+
     setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id === habitId) {
-          const exists = h.completedDates.includes(dateStr);
-          const nextDates = exists
-            ? h.completedDates.filter((d) => d !== dateStr)
-            : [...h.completedDates, dateStr];
-
-          let streak = 0;
-          let checkDate = new Date();
-          while (true) {
-            const checkStr = checkDate.toISOString().split('T')[0];
-            if (nextDates.includes(checkStr)) {
-              streak++;
-              checkDate.setDate(checkDate.getDate() - 1);
-            } else {
-              break;
-            }
-          }
-
-          return { ...h, completedDates: nextDates, streak };
-        }
-        return h;
-      })
+      prev.map((h) => (h.id === habitId ? { ...h, completedDates: nextDates, streak } : h))
     );
+    await dbUpdateHabit(habitId, { completedDates: nextDates, streak });
   };
 
   const handleToggleHabitToday = (habitId: string) => {
     handleToggleHabitDate(habitId, getTodayString());
   };
 
-  const handleAddHabit = (habitData: Partial<HabitItem>) => {
-    const newHabit: HabitItem = {
-      id: `h-${Date.now()}`,
+  const handleAddHabit = async (habitData: Partial<HabitItem>) => {
+    const created = await dbCreateHabit({
       title: habitData.title || 'New Routine',
       workspace: habitData.workspace || 'personal',
       category: habitData.category || 'General',
@@ -309,19 +303,19 @@ export default function TrackerApp() {
       targetDaysPerWeek: 7,
       completedDates: [],
       streak: 0,
-      createdAt: getTodayString(),
-    };
-    setHabits((prev) => [...prev, newHabit]);
+    });
+    setHabits((prev) => [...prev, created]);
   };
 
-  const handleDeleteHabit = (habitId: string) => {
+  const handleDeleteHabit = async (habitId: string) => {
     setHabits((prev) => prev.filter((h) => h.id !== habitId));
+    await dbDeleteHabit(habitId);
   };
 
   // Clear all workspace data
-  const handleClearAllData = () => {
+  const handleClearAllData = async () => {
     if (confirm('Clear all tasks, events, and clients for a fresh clean slate?')) {
-      const empty = clearAllData();
+      const empty = await clearAllData();
       setTasks(empty.tasks);
       setClients(empty.clients);
       setHabits(empty.habits);
@@ -329,8 +323,8 @@ export default function TrackerApp() {
   };
 
   // Load sample demo data
-  const handleLoadSampleData = () => {
-    const samples = loadSampleDemoData();
+  const handleLoadSampleData = async () => {
+    const samples = await loadSampleDemoData();
     setTasks(samples.tasks);
     setClients(samples.clients);
     setHabits(samples.habits);
@@ -518,6 +512,8 @@ export default function TrackerApp() {
             onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
             onClearData={handleClearAllData}
             onLoadSampleData={handleLoadSampleData}
+            onSignOut={handleSignOut}
+            userEmail={userEmail}
             taskCounts={taskCounts}
           />
         </div>

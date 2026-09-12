@@ -11,7 +11,8 @@ import {
   Building2, 
   Layers,
   RotateCcw,
-  Trash2
+  Trash2,
+  LogOut
 } from 'lucide-react';
 import { WorkspaceType, TaskPriority, TaskStatus, ActiveView } from '@/types';
 
@@ -30,6 +31,8 @@ interface HeaderProps {
   onOpenCommandPalette: () => void;
   onClearData: () => void;
   onLoadSampleData: () => void;
+  onSignOut: () => void;
+  userEmail?: string | null;
   taskCounts: {
     all: number;
     personal: number;
@@ -53,6 +56,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCommandPalette,
   onClearData,
   onLoadSampleData,
+  onSignOut,
+  userEmail,
   taskCounts,
 }) => {
   const getViewTitle = () => {
@@ -219,6 +224,16 @@ export const Header: React.FC<HeaderProps> = ({
               Load Demo
             </button>
           )}
+
+          {/* Account / Sign out */}
+          <div className="h-4 w-px bg-slate-200 hidden sm:block" />
+          <button
+            onClick={onSignOut}
+            title={userEmail ? `Sign out (${userEmail})` : 'Sign out'}
+            className="flex items-center gap-1.5 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors shadow-2xs"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
         </div>
 
       </div>
