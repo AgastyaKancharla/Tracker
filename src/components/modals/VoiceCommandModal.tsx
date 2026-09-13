@@ -214,12 +214,28 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
     draft.action !== 'query' &&
     (needsTaskForm ? !!(draft.title || matchedTask?.title) : !!draft.taskId);
 
+  // Voice only gives us a spoken client name - resolve it to an actual
+  // client record so the task links up the same way the manual TaskModal
+  // does (case-insensitive, tolerant of a partial/contained match).
+  const resolveClientId = (name: string | undefined): string | undefined => {
+    if (!name) return undefined;
+    const needle = name.trim().toLowerCase();
+    if (!needle) return undefined;
+    const exact = clients.find((c) => c.name.trim().toLowerCase() === needle);
+    if (exact) return exact.id;
+    const partial = clients.find(
+      (c) => c.name.toLowerCase().includes(needle) || needle.includes(c.name.toLowerCase())
+    );
+    return partial?.id;
+  };
+
   const handleSave = async () => {
     if (!draft || !canSave || isSaving) return;
     setSaveError(null);
     setIsSaving(true);
     try {
       if (draft.action === 'add') {
+        const clientId = resolveClientId(draft.clientName);
         await onSaveTask({
           title: draft.title,
           description: draft.description,
@@ -229,8 +245,10 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
           dueTime: draft.dueTime ?? undefined,
           isEvent: draft.isEvent,
           clientName: draft.clientName,
+          clientId,
         });
       } else if (draft.action === 'edit' && draft.taskId) {
+        const clientId = resolveClientId(draft.clientName);
         await onSaveTask({
           id: draft.taskId,
           title: draft.title,
@@ -240,6 +258,8 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
           dueDate: draft.dueDate ?? undefined,
           dueTime: draft.dueTime ?? undefined,
           isEvent: draft.isEvent,
+          clientName: draft.clientName,
+          ...(clientId ? { clientId } : {}),
         });
       } else if (draft.action === 'delete' && draft.taskId) {
         await onDeleteTask(draft.taskId);
