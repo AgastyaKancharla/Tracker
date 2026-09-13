@@ -166,7 +166,14 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
           todayLocal: getTodayString(),
         }),
       });
-      const data = await res.json();
+      let data: { error?: string; draft?: VoiceCommandDraft };
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(
+          res.ok ? 'Voice command failed: the server returned an unreadable response.' : `Voice command failed (${res.status}).`
+        );
+      }
       if (!res.ok) throw new Error(data.error || 'Voice command failed.');
       const newDraft = data.draft as VoiceCommandDraft;
       setDraft(newDraft);
