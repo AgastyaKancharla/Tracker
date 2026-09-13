@@ -67,8 +67,12 @@ function computeDayTimeline(tasksForDay: TaskItem[]): {
   percentOccupied: number;
   untimedTasks: TaskItem[];
 } {
-  const DAY_START = 8 * 60;  // 08:00 AM
-  const DAY_END = 22 * 60;   // 10:00 PM (14 hours / 840 mins)
+  // Cover the full 24h day so events outside the typical 8am-10pm work window
+  // (e.g. a late-night 23:00 task) still show up in the occupied/free analysis
+  // below, instead of only in the deadline list above.
+  const DAY_START = 0;
+  const DAY_END = 24 * 60;
+  const TOTAL_DAY_MINUTES = DAY_END - DAY_START;
 
   const timedTasks: { task: TaskItem; start: number; end: number }[] = [];
   const untimedTasks: TaskItem[] = [];
@@ -146,9 +150,9 @@ function computeDayTimeline(tasksForDay: TaskItem[]): {
     0
   );
 
-  const totalOccupied = Math.min(840, occupiedMins + untimedMins);
-  const totalFree = Math.max(0, 840 - totalOccupied);
-  const percentOccupied = Math.round((totalOccupied / 840) * 100);
+  const totalOccupied = Math.min(TOTAL_DAY_MINUTES, occupiedMins + untimedMins);
+  const totalFree = Math.max(0, TOTAL_DAY_MINUTES - totalOccupied);
+  const percentOccupied = Math.round((totalOccupied / TOTAL_DAY_MINUTES) * 100);
 
   return {
     blocks,
