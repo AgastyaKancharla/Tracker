@@ -405,7 +405,7 @@ export default function TrackerApp() {
 
   const urgentCount = tasks.filter((t) => t.priority === 'urgent' && t.status !== 'done').length;
   const eventsTodayCount = tasks.filter(
-    (t) => (t.dueDate === getTodayString() || t.isEvent) && t.status !== 'done'
+    (t) => t.dueDate === getTodayString() && t.status !== 'done'
   ).length;
 
   if (!isLoaded) {
@@ -605,6 +605,7 @@ export default function TrackerApp() {
             </div>
           )}
 
+          <div key={activeView} className="animate-in fade-in slide-in-from-bottom-1 duration-300">
           {activeView === 'dashboard' && (
             <DashboardView
               tasks={filteredTasks}
@@ -668,6 +669,7 @@ export default function TrackerApp() {
               onDeleteHabit={handleDeleteHabit}
             />
           )}
+          </div>
         </main>
       </div>
 

@@ -69,9 +69,9 @@ export function getDeadlineInfo(dueDate?: string, dueTime?: string, taskStatus?:
   if (taskStatus === 'done') {
     return {
       status: 'done',
-      badgeText: 'Completed',
+      badgeText: '✓ Completed',
       daysRemaining: null,
-      pillClasses: 'bg-neutral-100 text-neutral-500 border border-neutral-300',
+      pillClasses: 'bg-green-50 text-green-700 border border-green-300 transition-colors duration-200',
     };
   }
 
@@ -80,7 +80,7 @@ export function getDeadlineInfo(dueDate?: string, dueTime?: string, taskStatus?:
       status: 'ongoing',
       badgeText: '♾️ Ongoing (No Deadline)',
       daysRemaining: null,
-      pillClasses: 'bg-neutral-100 text-neutral-500 border border-neutral-300',
+      pillClasses: 'bg-neutral-100 text-neutral-500 border border-neutral-300 transition-colors duration-200',
     };
   }
 
@@ -92,7 +92,7 @@ export function getDeadlineInfo(dueDate?: string, dueTime?: string, taskStatus?:
       status: 'ongoing',
       badgeText: '♾️ In Progress',
       daysRemaining: null,
-      pillClasses: 'bg-neutral-100 text-neutral-500 border border-neutral-300',
+      pillClasses: 'bg-blue-50 text-blue-700 border border-blue-300 transition-colors duration-200',
     };
   }
 
@@ -102,7 +102,7 @@ export function getDeadlineInfo(dueDate?: string, dueTime?: string, taskStatus?:
       status: 'overdue',
       badgeText: `🚨 Overdue by ${overdueDays}d`,
       daysRemaining: days,
-      pillClasses: 'bg-black text-white border border-black font-semibold',
+      pillClasses: 'bg-red-600 text-white border border-red-600 font-semibold animate-pulse',
     };
   }
 
@@ -111,7 +111,7 @@ export function getDeadlineInfo(dueDate?: string, dueTime?: string, taskStatus?:
       status: 'today',
       badgeText: `⚠️ Due Today${timeSuffix}`,
       daysRemaining: 0,
-      pillClasses: 'bg-neutral-900 text-white border border-neutral-900 font-semibold',
+      pillClasses: 'bg-red-50 text-red-700 border border-red-400 font-semibold transition-colors duration-200',
     };
   }
 
@@ -120,7 +120,7 @@ export function getDeadlineInfo(dueDate?: string, dueTime?: string, taskStatus?:
       status: 'tomorrow',
       badgeText: `⏳ Due Tomorrow${timeSuffix}`,
       daysRemaining: 1,
-      pillClasses: 'bg-neutral-200 text-neutral-800 border border-neutral-400',
+      pillClasses: 'bg-orange-50 text-orange-700 border border-orange-300 transition-colors duration-200',
     };
   }
 
@@ -129,7 +129,7 @@ export function getDeadlineInfo(dueDate?: string, dueTime?: string, taskStatus?:
       status: 'soon',
       badgeText: `⏱️ ${days} days left (${formatDate(dueDate)})`,
       daysRemaining: days,
-      pillClasses: 'bg-neutral-100 text-neutral-700 border border-neutral-300',
+      pillClasses: 'bg-blue-50 text-blue-700 border border-blue-200 transition-colors duration-200',
     };
   }
 

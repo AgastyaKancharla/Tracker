@@ -212,7 +212,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Primary New Item button */}
           <button
             onClick={onOpenTaskModal}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-black text-white text-xs font-medium shadow-sm transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-black text-white text-xs font-medium shadow-sm transition-all duration-200 hover:scale-105 active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Item</span>

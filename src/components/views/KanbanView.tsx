@@ -110,7 +110,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
               return (
                 <div
                   key={task.id}
-                  className="p-3.5 rounded-xl bg-white hover:bg-neutral-50 border border-neutral-200 hover:border-neutral-300 transition-all shadow-xs hover:shadow-md group space-y-2.5 relative"
+                  className="p-3.5 rounded-xl bg-white hover:bg-neutral-50 border border-neutral-200 hover:border-neutral-300 transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 group space-y-2.5 relative animate-in fade-in duration-300"
                 >
                   {/* Top Bar: Workspace pill + Priority */}
                   <div className="flex items-center justify-between text-[10px]">
@@ -127,13 +127,13 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
                       {task.workspace}
                     </span>
 
-                    <span className={`px-1.5 py-0.2 rounded font-mono font-semibold uppercase border ${
+                    <span className={`px-1.5 py-0.2 rounded font-mono font-semibold uppercase border transition-colors duration-200 ${
                       task.priority === 'urgent'
-                        ? 'text-black bg-neutral-100 border-neutral-300'
+                        ? 'text-white bg-red-600 border-red-600'
                         : task.priority === 'high'
-                        ? 'text-neutral-800 bg-neutral-100 border-neutral-300'
+                        ? 'text-orange-700 bg-orange-100 border-orange-300'
                         : task.priority === 'medium'
-                        ? 'text-neutral-700 bg-neutral-100 border-neutral-300'
+                        ? 'text-blue-700 bg-blue-50 border-blue-200'
                         : 'text-neutral-600 bg-neutral-100 border-neutral-200'
                     }`}>
                       {task.priority}
