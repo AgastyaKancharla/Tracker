@@ -185,7 +185,9 @@ export default function TrackerApp() {
       }
       setEditingTask(null);
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to save the task.');
+      const message = err instanceof Error ? err.message : 'Failed to save the task.';
+      setErrorMessage(message);
+      throw err instanceof Error ? err : new Error(message);
     }
   };
 
@@ -196,7 +198,9 @@ export default function TrackerApp() {
       await dbDeleteTask(taskId);
     } catch (err) {
       setTasks(previous);
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to delete the task.');
+      const message = err instanceof Error ? err.message : 'Failed to delete the task.';
+      setErrorMessage(message);
+      throw err instanceof Error ? err : new Error(message);
     }
   };
 
@@ -227,7 +231,9 @@ export default function TrackerApp() {
       await dbUpdateTask(taskId, { status: newStatus, completedAt });
     } catch (err) {
       setTasks(previous);
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to update the task.');
+      const message = err instanceof Error ? err.message : 'Failed to update the task.';
+      setErrorMessage(message);
+      throw err instanceof Error ? err : new Error(message);
     }
   };
 
@@ -749,7 +755,7 @@ export default function TrackerApp() {
         {/* Center Thumb Floating + Quick Add Action */}
         <button
           onClick={() => handleOpenTaskModal()}
-          className="flex flex-col items-center justify-center -tranneutral-y-3.5 focus:outline-none group"
+          className="flex flex-col items-center justify-center -translate-y-3.5 focus:outline-none group"
           title="New Item"
         >
           <div className="w-12 h-12 rounded-full bg-neutral-900 text-white flex items-center justify-center shadow-lg shadow-neutral-900/35 hover:bg-black active:scale-95 transition-all">

@@ -159,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           {/* Quick Search / Command Palette trigger */}
           <div className="relative flex-1 sm:flex-initial">
-            <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -tranneutral-y-1/2 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Search or filter..."
@@ -169,7 +169,7 @@ export const Header: React.FC<HeaderProps> = ({
             />
             <button
               onClick={onOpenCommandPalette}
-              className="absolute right-2 top-1/2 -tranneutral-y-1/2 px-1.5 py-0.5 rounded bg-neutral-200/70 border border-neutral-300/70 text-[10px] text-neutral-500 font-mono hover:bg-neutral-300/80 hover:text-neutral-800 transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-neutral-200/70 border border-neutral-300/70 text-[10px] text-neutral-500 font-mono hover:bg-neutral-300/80 hover:text-neutral-800 transition-colors"
               title="Command Palette (Ctrl/Cmd + K)"
             >
               ⌘K
