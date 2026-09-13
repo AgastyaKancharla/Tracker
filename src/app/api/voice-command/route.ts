@@ -90,6 +90,19 @@ Merge the new spoken text into this draft: update only the fields the new speech
 }
 
 export async function POST(request: NextRequest) {
+  try {
+    return await handleVoiceCommand(request);
+  } catch (err) {
+    // Last-resort safety net: an uncaught throw here would otherwise reach
+    // the client as an empty response body, which fails client-side
+    // `res.json()` with a confusing "Unexpected end of JSON input" error
+    // instead of a readable message.
+    const message = err instanceof Error ? err.message : 'Unexpected error handling the voice command.';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+async function handleVoiceCommand(request: NextRequest): Promise<NextResponse> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'Voice command parsing is not configured.' }, { status: 500 });
@@ -168,7 +181,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const data = await groqRes.json();
+  let data: any;
+  try {
+    data = await groqRes.json();
+  } catch {
+    return NextResponse.json({ error: 'Malformed response from voice parsing service.' }, { status: 502 });
+  }
   const content = data?.choices?.[0]?.message?.content;
   if (!content) {
     return NextResponse.json({ error: 'Empty response from voice parsing service.' }, { status: 502 });
