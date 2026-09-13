@@ -12,7 +12,8 @@ import {
   Layers,
   RotateCcw,
   Trash2,
-  LogOut
+  LogOut,
+  Mic
 } from 'lucide-react';
 import { WorkspaceType, TaskPriority, TaskStatus, ActiveView } from '@/types';
 
@@ -29,6 +30,7 @@ interface HeaderProps {
   onOpenTaskModal: () => void;
   onOpenClientModal: () => void;
   onOpenCommandPalette: () => void;
+  onOpenVoiceCommand: () => void;
   onClearData: () => void;
   onLoadSampleData: () => void;
   onSignOut: () => void;
@@ -54,6 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenTaskModal,
   onOpenClientModal,
   onOpenCommandPalette,
+  onOpenVoiceCommand,
   onClearData,
   onLoadSampleData,
   onSignOut,
@@ -196,6 +199,15 @@ export const Header: React.FC<HeaderProps> = ({
               <span>New Client</span>
             </button>
           )}
+
+          {/* Voice Command button */}
+          <button
+            onClick={onOpenVoiceCommand}
+            title="Add, edit, delete, or complete a task by voice"
+            className="flex items-center gap-1.5 p-1.5 rounded-lg text-neutral-600 hover:text-black hover:bg-neutral-100 border border-neutral-200 transition-colors shadow-2xs"
+          >
+            <Mic className="w-3.5 h-3.5" />
+          </button>
 
           {/* Primary New Item button */}
           <button

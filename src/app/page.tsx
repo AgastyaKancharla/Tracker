@@ -32,6 +32,7 @@ import { Sidebar } from '@/components/common/Sidebar';
 import { CommandPalette } from '@/components/common/CommandPalette';
 import { TaskModal } from '@/components/modals/TaskModal';
 import { ClientModal } from '@/components/modals/ClientModal';
+import { VoiceCommandModal } from '@/components/modals/VoiceCommandModal';
 import { DashboardView } from '@/components/views/DashboardView';
 import { KanbanView } from '@/components/views/KanbanView';
 import { ListView } from '@/components/views/ListView';
@@ -50,7 +51,8 @@ import {
   Sparkles,
   CheckSquare,
   Users2,
-  Flame
+  Flame,
+  Mic
 } from 'lucide-react';
 
 export default function TrackerApp() {
@@ -82,6 +84,7 @@ export default function TrackerApp() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Load data from Supabase on mount
@@ -503,6 +506,13 @@ export default function TrackerApp() {
                 <Search className="w-4 h-4" />
               </button>
               <button
+                onClick={() => setIsVoiceModalOpen(true)}
+                className="p-2 rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
+                title="Voice command"
+              >
+                <Mic className="w-4 h-4" />
+              </button>
+              <button
                 onClick={() => handleOpenTaskModal()}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-semibold shadow-xs hover:bg-black transition-all active:scale-95"
               >
@@ -572,6 +582,7 @@ export default function TrackerApp() {
             onOpenTaskModal={() => handleOpenTaskModal()}
             onOpenClientModal={() => handleOpenClientModal()}
             onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+            onOpenVoiceCommand={() => setIsVoiceModalOpen(true)}
             onClearData={handleClearAllData}
             onLoadSampleData={handleLoadSampleData}
             onSignOut={handleSignOut}
@@ -678,6 +689,16 @@ export default function TrackerApp() {
         onClose={() => setIsClientModalOpen(false)}
         onSave={handleSaveClient}
         editingClient={editingClient}
+      />
+
+      <VoiceCommandModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        tasks={tasks}
+        clients={clients}
+        onSaveTask={handleSaveTask}
+        onDeleteTask={handleDeleteTask}
+        onUpdateTaskStatus={handleUpdateTaskStatus}
       />
 
       <CommandPalette
