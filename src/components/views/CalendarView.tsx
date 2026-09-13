@@ -16,10 +16,11 @@ import {
   Zap,
   Sparkles,
   ArrowRight,
-  PieChart
+  PieChart,
+  X
 } from 'lucide-react';
 import { TaskItem, TaskWorkspace } from '@/types';
-import { formatDate, isToday, getTodayString, getDeadlineInfo, formatDuration } from '@/lib/utils';
+import { formatDate, isToday, getTodayString, getDeadlineInfo, formatDuration, toLocalDateString } from '@/lib/utils';
 
 interface CalendarViewProps {
   tasks: TaskItem[];
@@ -172,6 +173,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
   const [mobileTab, setMobileTab] = useState<'calendar' | 'schedule'>('calendar');
+  const [isDayModalOpen, setIsDayModalOpen] = useState(false);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -223,7 +225,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     const day = daysInPrevMonth - i;
     const d = new Date(year, month - 1, day);
     calendarCells.push({
-      dateString: d.toISOString().split('T')[0],
+      dateString: toLocalDateString(d),
       dayNum: day,
       isCurrentMonth: false,
     });
@@ -232,7 +234,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   for (let d = 1; d <= daysInMonth; d++) {
     const dateObj = new Date(year, month, d);
     calendarCells.push({
-      dateString: dateObj.toISOString().split('T')[0],
+      dateString: toLocalDateString(dateObj),
       dayNum: d,
       isCurrentMonth: true,
     });
@@ -242,7 +244,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   for (let d = 1; d <= remaining; d++) {
     const dateObj = new Date(year, month + 1, d);
     calendarCells.push({
-      dateString: dateObj.toISOString().split('T')[0],
+      dateString: toLocalDateString(dateObj),
       dayNum: d,
       isCurrentMonth: false,
     });
@@ -250,168 +252,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  return (
-    <div className="space-y-4 animate-in fade-in duration-150">
-      
-      {/* Mobile Tab Switcher (Visible on small screens only) */}
-      <div className="flex lg:hidden items-center p-1 bg-neutral-100 rounded-xl border border-neutral-200 text-xs">
-        <button
-          onClick={() => setMobileTab('calendar')}
-          className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-1.5 ${
-            mobileTab === 'calendar'
-              ? 'bg-white text-black shadow-xs'
-              : 'text-neutral-600 hover:text-neutral-900'
-          }`}
-        >
-          <CalendarIcon className="w-3.5 h-3.5" />
-          <span>Month Calendar</span>
-        </button>
-        <button
-          onClick={() => setMobileTab('schedule')}
-          className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-1.5 ${
-            mobileTab === 'schedule'
-              ? 'bg-white text-black shadow-xs'
-              : 'text-neutral-600 hover:text-neutral-900'
-          }`}
-        >
-          <Zap className="w-3.5 h-3.5 text-zinc-600" />
-          <span>Day Free-Time Map</span>
-          {selectedDayTasks.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-neutral-200 text-black text-[10px] font-mono font-bold">
-              {selectedDayTasks.length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-        
-        {/* Calendar Grid: 7 Columns */}
-        <div className={`lg:col-span-7 space-y-4 ${mobileTab === 'calendar' ? 'block' : 'hidden lg:block'}`}>
-          
-          {/* Month Navigation Header */}
-          <div className="flex items-center justify-between p-3.5 sm:p-4 bg-white border border-neutral-200 rounded-2xl shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-base font-bold text-neutral-900 tracking-tight">{monthName}</h2>
-              <button
-                onClick={goToToday}
-                className="px-2.5 py-1 rounded-md bg-neutral-100 hover:bg-neutral-200 text-xs text-neutral-700 font-mono font-medium transition-colors"
-              >
-                Today
-              </button>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={prevMonth}
-                className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={nextMonth}
-                className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Calendar Grid Container */}
-          <div className="rounded-2xl border border-neutral-200 bg-white p-3 sm:p-4 overflow-hidden shadow-xs">
-            {/* Day Names Header */}
-            <div className="grid grid-cols-7 gap-1 text-center mb-2">
-              {daysOfWeek.map((day) => (
-                <div key={day} className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 py-1 font-semibold">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Day Cells */}
-            <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
-              {calendarCells.map((cell) => {
-                const cellTasks = tasksByDate[cell.dateString] || [];
-                const isSelected = selectedDate === cell.dateString;
-                const isTodayCell = isToday(cell.dateString);
-
-                return (
-                  <div
-                    key={cell.dateString}
-                    onClick={() => {
-                      setSelectedDate(cell.dateString);
-                    }}
-                    className={`min-h-[85px] sm:min-h-[95px] p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between group ${
-                      isSelected
-                        ? 'bg-neutral-100/70 border-neutral-600 shadow-xs ring-2 ring-neutral-600/20'
-                        : isTodayCell
-                        ? 'bg-neutral-100/20 border-neutral-500'
-                        : cell.isCurrentMonth
-                        ? 'bg-white border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50/70'
-                        : 'bg-neutral-50/50 border-neutral-100 opacity-40 hover:opacity-75'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs font-mono font-medium ${
-                        isTodayCell 
-                          ? 'w-6 h-6 rounded-full bg-neutral-900 text-white flex items-center justify-center font-bold shadow-2xs' 
-                          : isSelected 
-                          ? 'text-black font-bold' 
-                          : 'text-neutral-700'
-                      }`}>
-                        {cell.dayNum}
-                      </span>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenTaskModal(undefined, undefined, cell.dateString);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-neutral-400 hover:text-neutral-800 hover:bg-neutral-100 transition-all hidden sm:block"
-                        title="Add item on this day"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-
-                    {/* Tasks Preview Badges */}
-                    <div className="space-y-1 my-1 overflow-hidden">
-                      {cellTasks.slice(0, 2).map((t) => (
-                        <div
-                          key={t.id}
-                          className={`text-[9px] px-1.5 py-0.5 rounded truncate font-medium ${
-                            t.workspace === 'personal'
-                              ? 'bg-stone-50 text-stone-700 border border-stone-200'
-                              : t.workspace === 'business'
-                              ? 'bg-neutral-100 text-black border border-neutral-300'
-                              : 'bg-zinc-100 text-zinc-900 border border-zinc-300'
-                          }`}
-                        >
-                          {t.isEvent ? `⏱ ${t.dueTime || 'Event'}` : t.title}
-                        </div>
-                      ))}
-                      {cellTasks.length > 2 && (
-                        <div className="text-[9px] text-neutral-500 font-mono px-0.5 font-medium">
-                          +{cellTasks.length - 2} more
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="h-0.5" />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-        </div>
-
-        {/* Side Day Schedule & Free Time Analyzer: 5 Columns */}
-        <div className={`lg:col-span-5 space-y-4 ${mobileTab === 'schedule' ? 'block' : 'hidden lg:block'}`}>
-          
-          {/* Agenda Card */}
+  const renderAgendaCard = () => (
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-neutral-200 space-y-4 shadow-xs">
-            
+
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
@@ -634,10 +477,197 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             </div>
 
           </div>
+  );
+
+  return (
+    <div className="space-y-4 animate-in fade-in duration-150">
+      
+      {/* Mobile Tab Switcher (Visible on small screens only) */}
+      <div className="flex lg:hidden items-center p-1 bg-neutral-100 rounded-xl border border-neutral-200 text-xs">
+        <button
+          onClick={() => setMobileTab('calendar')}
+          className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-1.5 ${
+            mobileTab === 'calendar'
+              ? 'bg-white text-black shadow-xs'
+              : 'text-neutral-600 hover:text-neutral-900'
+          }`}
+        >
+          <CalendarIcon className="w-3.5 h-3.5" />
+          <span>Month Calendar</span>
+        </button>
+        <button
+          onClick={() => setMobileTab('schedule')}
+          className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-1.5 ${
+            mobileTab === 'schedule'
+              ? 'bg-white text-black shadow-xs'
+              : 'text-neutral-600 hover:text-neutral-900'
+          }`}
+        >
+          <Zap className="w-3.5 h-3.5 text-zinc-600" />
+          <span>Day Free-Time Map</span>
+          {selectedDayTasks.length > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full bg-neutral-200 text-black text-[10px] font-mono font-bold">
+              {selectedDayTasks.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+        
+        {/* Calendar Grid: 7 Columns */}
+        <div className={`lg:col-span-7 space-y-4 ${mobileTab === 'calendar' ? 'block' : 'hidden lg:block'}`}>
+          
+          {/* Month Navigation Header */}
+          <div className="flex items-center justify-between p-3.5 sm:p-4 bg-white border border-neutral-200 rounded-2xl shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-base font-bold text-neutral-900 tracking-tight">{monthName}</h2>
+              <button
+                onClick={goToToday}
+                className="px-2.5 py-1 rounded-md bg-neutral-100 hover:bg-neutral-200 text-xs text-neutral-700 font-mono font-medium transition-colors"
+              >
+                Today
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={prevMonth}
+                className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={nextMonth}
+                className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Calendar Grid Container */}
+          <div className="rounded-2xl border border-neutral-200 bg-white p-3 sm:p-4 overflow-hidden shadow-xs">
+            {/* Day Names Header */}
+            <div className="grid grid-cols-7 gap-1 text-center mb-2">
+              {daysOfWeek.map((day) => (
+                <div key={day} className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 py-1 font-semibold">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Day Cells */}
+            <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+              {calendarCells.map((cell) => {
+                const cellTasks = tasksByDate[cell.dateString] || [];
+                const isSelected = selectedDate === cell.dateString;
+                const isTodayCell = isToday(cell.dateString);
+
+                return (
+                  <div
+                    key={cell.dateString}
+                    onClick={() => {
+                      setSelectedDate(cell.dateString);
+                      setIsDayModalOpen(true);
+                    }}
+                    className={`min-h-[85px] sm:min-h-[95px] p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between group ${
+                      isSelected
+                        ? 'bg-neutral-100/70 border-neutral-600 shadow-xs ring-2 ring-neutral-600/20'
+                        : isTodayCell
+                        ? 'bg-neutral-100/20 border-neutral-500'
+                        : cell.isCurrentMonth
+                        ? 'bg-white border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50/70'
+                        : 'bg-neutral-50/50 border-neutral-100 opacity-40 hover:opacity-75'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-mono font-medium ${
+                        isTodayCell 
+                          ? 'w-6 h-6 rounded-full bg-neutral-900 text-white flex items-center justify-center font-bold shadow-2xs' 
+                          : isSelected 
+                          ? 'text-black font-bold' 
+                          : 'text-neutral-700'
+                      }`}>
+                        {cell.dayNum}
+                      </span>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenTaskModal(undefined, undefined, cell.dateString);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-neutral-400 hover:text-neutral-800 hover:bg-neutral-100 transition-all hidden sm:block"
+                        title="Add item on this day"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    {/* Tasks Preview Badges */}
+                    <div className="space-y-1 my-1 overflow-hidden">
+                      {cellTasks.slice(0, 2).map((t) => (
+                        <div
+                          key={t.id}
+                          className={`text-[9px] px-1.5 py-0.5 rounded truncate font-medium ${
+                            t.workspace === 'personal'
+                              ? 'bg-stone-50 text-stone-700 border border-stone-200'
+                              : t.workspace === 'business'
+                              ? 'bg-neutral-100 text-black border border-neutral-300'
+                              : 'bg-zinc-100 text-zinc-900 border border-zinc-300'
+                          }`}
+                        >
+                          {t.isEvent ? `⏱ ${t.dueTime || 'Event'}` : t.title}
+                        </div>
+                      ))}
+                      {cellTasks.length > 2 && (
+                        <div className="text-[9px] text-neutral-500 font-mono px-0.5 font-medium">
+                          +{cellTasks.length - 2} more
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="h-0.5" />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Side Day Schedule & Free Time Analyzer: 5 Columns */}
+        <div className={`lg:col-span-5 space-y-4 ${mobileTab === 'schedule' ? 'block' : 'hidden lg:block'}`}>
+          
+          {/* Agenda Card */}
+          {renderAgendaCard()}
 
         </div>
 
       </div>
+
+      {/* Day Detail Popup - opens when a calendar day cell is clicked */}
+      {isDayModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-neutral-900/50 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setIsDayModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-end px-1 pb-2 sm:px-0">
+              <button
+                onClick={() => setIsDayModalOpen(false)}
+                className="p-1.5 rounded-lg bg-white border border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-xs transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {renderAgendaCard()}
+          </div>
+        </div>
+      )}
 
     </div>
   );

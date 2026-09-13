@@ -38,7 +38,7 @@ import { ListView } from '@/components/views/ListView';
 import { CalendarView } from '@/components/views/CalendarView';
 import { ClientsView } from '@/components/views/ClientsView';
 import { HabitsView } from '@/components/views/HabitsView';
-import { getTodayString } from '@/lib/utils';
+import { getTodayString, toLocalDateString } from '@/lib/utils';
 import { 
   Menu, 
   X, 
@@ -313,7 +313,7 @@ export default function TrackerApp() {
     let streak = 0;
     let checkDate = new Date();
     while (true) {
-      const checkStr = checkDate.toISOString().split('T')[0];
+      const checkStr = toLocalDateString(checkDate);
       if (nextDates.includes(checkStr)) {
         streak++;
         checkDate.setDate(checkDate.getDate() - 1);

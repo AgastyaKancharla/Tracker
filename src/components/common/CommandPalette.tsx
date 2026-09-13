@@ -21,6 +21,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { TaskItem, Client, ActiveView, WorkspaceType, TaskWorkspace } from '@/types';
+import { getTodayString } from '@/lib/utils';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -95,7 +96,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `chronotrack-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `chronotrack-backup-${getTodayString()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     onClose();
