@@ -25,9 +25,19 @@ interface TaskModalProps {
   onSave: (taskData: Partial<TaskItem>) => void;
   editingTask?: TaskItem | null;
   clients: Client[];
+  tasks?: TaskItem[];
   defaultWorkspace?: TaskWorkspace;
   defaultDate?: string;
   defaultTime?: string;
+}
+
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map((n) => parseInt(n, 10));
+  return (h || 0) * 60 + (m || 0);
+}
+
+function taskDurationMinutes(task: TaskItem): number {
+  return task.eventDurationMinutes || (task.estimatedHours ? Math.round(task.estimatedHours * 60) : 60);
 }
 
 export const TaskModal: React.FC<TaskModalProps> = ({
@@ -36,6 +46,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   onSave,
   editingTask,
   clients,
+  tasks = [],
   defaultWorkspace = 'personal',
   defaultDate,
   defaultTime,
@@ -148,6 +159,18 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   };
 
   const deadlinePreview = getDeadlineInfo(hasDeadline ? dueDate : undefined, dueTime, status);
+
+  const conflicts = hasDeadline && dueTime
+    ? tasks.filter((t) => {
+        if (t.id === editingTask?.id) return false;
+        if (t.dueDate !== dueDate || !t.dueTime) return false;
+        const otherStart = timeToMinutes(t.dueTime);
+        const otherEnd = otherStart + taskDurationMinutes(t);
+        const thisStart = timeToMinutes(dueTime);
+        const thisEnd = thisStart + (isEvent ? eventDurationMinutes : (estimatedHours ? Math.round(estimatedHours * 60) : 60));
+        return thisStart < otherEnd && otherStart < thisEnd;
+      })
+    : [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-neutral-900/50 backdrop-blur-xs animate-in fade-in duration-150">
@@ -428,6 +451,23 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                     {deadlinePreview.badgeText}
                   </span>
                 </div>
+
+                {/* Scheduling Conflict Warning (non-blocking) */}
+                {conflicts.length > 0 && (
+                  <div className="p-2.5 rounded-lg bg-neutral-100 border border-neutral-400 text-xs text-neutral-800 flex items-start gap-2">
+                    <span className="flex-shrink-0">⚠</span>
+                    <span>
+                      Overlaps with{' '}
+                      {conflicts.map((c, i) => (
+                        <React.Fragment key={c.id}>
+                          {i > 0 && ', '}
+                          <strong>&quot;{c.title}&quot;</strong> at {c.dueTime}
+                        </React.Fragment>
+                      ))}
+                      . You can still save this if that&apos;s intentional.
+                    </span>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="p-3 rounded-lg bg-white border border-neutral-200 flex items-start gap-2 text-xs text-neutral-600 shadow-2xs">

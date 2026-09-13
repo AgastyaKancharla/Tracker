@@ -166,12 +166,12 @@ export default function TrackerApp() {
           title: taskData.title || 'Untitled Item',
           description: taskData.description || '',
           workspace: taskData.workspace || 'personal',
-          status: taskModalDefaultStatus || taskData.status || 'todo',
+          status: taskData.status || taskModalDefaultStatus || 'todo',
           priority: taskData.priority || 'medium',
-          dueDate: taskModalDefaultDate || taskData.dueDate || getTodayString(),
+          dueDate: taskData.dueDate || taskModalDefaultDate || getTodayString(),
           dueTime: taskData.dueTime,
           tags: taskData.tags || [],
-          clientId: taskModalDefaultClientId || taskData.clientId,
+          clientId: taskData.clientId || taskModalDefaultClientId,
           clientName: taskData.clientName,
           isEvent: taskData.isEvent || false,
           eventDurationMinutes: taskData.eventDurationMinutes,
@@ -667,6 +667,7 @@ export default function TrackerApp() {
         onSave={handleSaveTask}
         editingTask={editingTask}
         clients={clients}
+        tasks={tasks}
         defaultWorkspace={taskModalDefaultWorkspace}
         defaultDate={taskModalDefaultDate}
         defaultTime={taskModalDefaultTime}
