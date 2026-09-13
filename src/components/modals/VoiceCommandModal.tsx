@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Mic, Square, X, Loader2, CheckCircle2, AlertTriangle, Pencil } from 'lucide-react';
 import { TaskItem, Client, TaskWorkspace, TaskPriority, TaskStatus } from '@/types';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getTodayString } from '@/lib/utils';
 
 // Minimal ambient types for the Web Speech API (not in default TS lib)
 interface SpeechRecognitionResultLike {
@@ -32,7 +32,7 @@ declare global {
 }
 
 export interface VoiceCommandDraft {
-  action: 'add' | 'edit' | 'delete' | 'complete' | 'uncomplete' | 'unclear';
+  action: 'add' | 'edit' | 'delete' | 'complete' | 'uncomplete' | 'query' | 'unclear';
   taskId?: string;
   title?: string;
   description?: string;
@@ -45,6 +45,8 @@ export interface VoiceCommandDraft {
   missingFields: string[];
   summary: string;
   clarification?: string;
+  answer?: string;
+  relevantTaskIds?: string[];
 }
 
 interface VoiceCommandModalProps {
@@ -91,10 +93,19 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
       setErrorMsg(null);
       setEditingField(null);
       recognitionRef.current?.stop();
+      if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const speak = (text: string) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    window.speechSynthesis.speak(utterance);
+  };
 
   const matchedTask = draft?.taskId ? tasks.find((t) => t.id === draft.taskId) : undefined;
 
@@ -157,12 +168,17 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
           })),
           clients: clients.map((c) => ({ id: c.id, name: c.name, company: c.company })),
           previousDraft: isMerging ? draft : undefined,
+          todayLocal: getTodayString(),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Voice command failed.');
-      setDraft(data.draft as VoiceCommandDraft);
+      const newDraft = data.draft as VoiceCommandDraft;
+      setDraft(newDraft);
       setPhase('reviewing');
+      if (newDraft.action === 'query' && newDraft.answer) {
+        speak(newDraft.answer);
+      }
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Voice command failed.');
       setPhase('error');
@@ -185,15 +201,18 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
     delete: 'Delete task',
     complete: 'Mark done',
     uncomplete: 'Mark not done',
+    query: 'Answer',
     unclear: 'Needs clarification',
   };
 
   const isDestructive = draft?.action === 'delete';
+  const isQuery = draft?.action === 'query';
   const needsTaskForm = draft?.action === 'add' || draft?.action === 'edit';
 
   const canSave =
     draft &&
     draft.action !== 'unclear' &&
+    draft.action !== 'query' &&
     (needsTaskForm ? !!(draft.title || matchedTask?.title) : !!draft.taskId);
 
   const handleSave = () => {
@@ -312,7 +331,7 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
               <p className="text-xs text-neutral-500 text-center">
                 {phase === 'recording'
                   ? 'Listening… tap to stop'
-                  : 'Tap to speak: "add a task to call the dentist tomorrow at 5, it\'s urgent"'}
+                  : 'Tap to speak — add/edit/delete a task, mark one done, or ask "what\'s urgent this week?"'}
               </p>
               {transcript && (
                 <p className="text-xs text-neutral-700 italic text-center px-2">&quot;{transcript}&quot;</p>
@@ -342,7 +361,9 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
                 </span>
               </div>
 
-              <p className="text-sm text-neutral-900 font-medium leading-relaxed">{draft.summary}</p>
+              {!isQuery && (
+                <p className="text-sm text-neutral-900 font-medium leading-relaxed">{draft.summary}</p>
+              )}
 
               {draft.action === 'unclear' && draft.clarification && (
                 <div className="p-3 rounded-lg bg-neutral-100 border border-neutral-400 text-xs text-neutral-800 flex items-start gap-2">
@@ -351,7 +372,42 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
                 </div>
               )}
 
-              {!needsTaskForm && draft.action !== 'unclear' && (
+              {isQuery && (
+                <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 space-y-2.5">
+                  <p className="text-sm text-neutral-900 leading-relaxed">
+                    {draft.answer || 'No answer returned.'}
+                  </p>
+                  {draft.answer && (
+                    <button
+                      type="button"
+                      onClick={() => speak(draft.answer!)}
+                      className="text-[11px] font-mono text-neutral-500 hover:text-neutral-900 transition-colors"
+                    >
+                      🔊 Replay
+                    </button>
+                  )}
+                  {!!draft.relevantTaskIds?.length && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {draft.relevantTaskIds.map((id) => {
+                        const t = tasks.find((task) => task.id === id);
+                        if (!t) return null;
+                        return (
+                          <span
+                            key={id}
+                            className="px-1.5 py-0.5 rounded bg-white border border-neutral-200 text-[10px] font-mono text-neutral-600"
+                          >
+                            {t.title}
+                            {t.dueDate ? ` · ${formatDate(t.dueDate)}` : ''}
+                            {t.dueTime ? ` ${t.dueTime}` : ''}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!needsTaskForm && !isQuery && draft.action !== 'unclear' && (
                 <div
                   className={`p-3 rounded-lg border text-xs flex items-center gap-2 ${
                     isDestructive
@@ -472,12 +528,12 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
                 </div>
               )}
 
-              {/* Hold-to-speak to add/correct missing info */}
+              {/* Hold-to-speak: adds/corrects details for add/edit, asks a fresh follow-up question for query */}
               <div className="flex items-center gap-2 pt-1">
                 <button
                   type="button"
                   disabled={!isSupported}
-                  onPointerDown={() => startRecording(true)}
+                  onPointerDown={() => startRecording(!isQuery)}
                   onPointerUp={stopRecording}
                   onPointerLeave={() => {
                     if (recognitionRef.current) stopRecording();
@@ -485,7 +541,7 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-neutral-100 border border-neutral-300 text-xs font-semibold text-neutral-700 hover:bg-neutral-200 transition-colors disabled:opacity-40 select-none"
                 >
                   <Mic className="w-3.5 h-3.5" />
-                  Hold to add or correct by voice
+                  {isQuery ? 'Hold to ask another question' : 'Hold to add or correct by voice'}
                 </button>
               </div>
               {transcript && phase === 'reviewing' && (
@@ -498,22 +554,33 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
         {/* Footer */}
         {phase === 'reviewing' && draft && (
           <div className="flex items-center justify-end gap-2.5 px-5 py-3.5 border-t border-neutral-200 bg-neutral-50/80">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-neutral-600 hover:text-neutral-900 rounded-lg hover:bg-neutral-100 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!canSave}
-              className={`px-5 py-2 text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-40 ${
-                isDestructive ? 'bg-black text-white hover:bg-neutral-800' : 'bg-neutral-900 text-white hover:bg-black'
-              }`}
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{isDestructive ? 'Confirm Delete' : 'Save'}</span>
-            </button>
+            {isQuery ? (
+              <button
+                onClick={onClose}
+                className="px-5 py-2 text-xs font-bold rounded-lg shadow-sm transition-all bg-neutral-900 text-white hover:bg-black"
+              >
+                Close
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-xs font-medium text-neutral-600 hover:text-neutral-900 rounded-lg hover:bg-neutral-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={!canSave}
+                  className={`px-5 py-2 text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-40 ${
+                    isDestructive ? 'bg-black text-white hover:bg-neutral-800' : 'bg-neutral-900 text-white hover:bg-black'
+                  }`}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>{isDestructive ? 'Confirm Delete' : 'Save'}</span>
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
