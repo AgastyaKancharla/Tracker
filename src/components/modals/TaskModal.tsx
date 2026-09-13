@@ -160,14 +160,20 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
   const deadlinePreview = getDeadlineInfo(hasDeadline ? dueDate : undefined, dueTime, status);
 
-  const conflicts = hasDeadline && dueTime
+  // Only real calendar events represent an actual "booked slot" - an ordinary
+  // task with just a due time/date isn't reserving a block of time, so it
+  // shouldn't be flagged as conflicting with anything. Restricting to
+  // event-vs-event also avoids guessing a duration for tasks that never set
+  // one (which previously defaulted to 60m/2h and caused false positives
+  // between unrelated same-day tasks that don't actually overlap).
+  const conflicts = hasDeadline && dueTime && isEvent
     ? tasks.filter((t) => {
         if (t.id === editingTask?.id) return false;
-        if (t.dueDate !== dueDate || !t.dueTime) return false;
+        if (!t.isEvent || t.dueDate !== dueDate || !t.dueTime) return false;
         const otherStart = timeToMinutes(t.dueTime);
         const otherEnd = otherStart + taskDurationMinutes(t);
         const thisStart = timeToMinutes(dueTime);
-        const thisEnd = thisStart + (isEvent ? eventDurationMinutes : (estimatedHours ? Math.round(estimatedHours * 60) : 60));
+        const thisEnd = thisStart + Number(eventDurationMinutes);
         return thisStart < otherEnd && otherStart < thisEnd;
       })
     : [];
