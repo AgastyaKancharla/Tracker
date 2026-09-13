@@ -20,7 +20,7 @@ interface ClientContext {
 }
 
 interface VoiceCommandDraft {
-  action: 'add' | 'edit' | 'delete' | 'complete' | 'uncomplete' | 'unclear';
+  action: 'add' | 'edit' | 'delete' | 'complete' | 'uncomplete' | 'query' | 'unclear';
   taskId?: string;
   title?: string;
   description?: string;
@@ -33,14 +33,21 @@ interface VoiceCommandDraft {
   missingFields: string[];
   summary: string;
   clarification?: string;
+  answer?: string;
+  relevantTaskIds?: string[];
 }
 
-function buildSystemPrompt(todayIso: string, tasks: TaskContext[], clients: ClientContext[]) {
+function buildSystemPrompt(
+  todayIso: string,
+  weekdayName: string,
+  tasks: TaskContext[],
+  clients: ClientContext[]
+) {
   return `You turn a spoken command about a personal/business task tracker into a single JSON object describing what to do. Reply with ONLY the JSON object, no markdown fences, no commentary.
 
-Today's date is ${todayIso} (YYYY-MM-DD). Resolve relative dates ("tomorrow", "next Friday", "in 3 days") against this date.
+Today's date is ${todayIso} (YYYY-MM-DD), a ${weekdayName}. Resolve relative dates ("tomorrow", "next Friday", "in 3 days", "this week", "next week") against this date. Treat "this week" as the 7-day span starting today's Monday through Sunday.
 
-Existing tasks (for resolving "the dentist task", "mark X done", "delete Y", etc.) — an id, title, workspace, status, priority, and optional dueDate/dueTime for each:
+Existing tasks (for resolving "the dentist task", "mark X done", "delete Y", answering questions, etc.) — an id, title, workspace, status, priority, and optional dueDate/dueTime for each:
 ${JSON.stringify(tasks)}
 
 Existing clients (for workspace "client" tasks):
@@ -48,7 +55,7 @@ ${JSON.stringify(clients)}
 
 Output schema (all fields optional except "action", "missingFields", "summary"):
 {
-  "action": "add" | "edit" | "delete" | "complete" | "uncomplete" | "unclear",
+  "action": "add" | "edit" | "delete" | "complete" | "uncomplete" | "query" | "unclear",
   "taskId": string,            // REQUIRED for edit/delete/complete/uncomplete - the id of the matched existing task
   "title": string,
   "description": string,
@@ -60,10 +67,13 @@ Output schema (all fields optional except "action", "missingFields", "summary"):
   "clientName": string,
   "missingFields": string[],   // field names still needed to make this a complete task, e.g. ["dueTime","priority"]
   "summary": string,           // one short human-readable sentence recapping the parsed action, for the user to review
-  "clarification": string      // ONLY if action is "unclear" or a task reference is ambiguous (multiple candidates) - a short question to ask the user
+  "clarification": string,     // ONLY if action is "unclear" or a task reference is ambiguous (multiple candidates) - a short question to ask the user
+  "answer": string,            // ONLY for action "query" - your natural-language answer to their question, 2-4 sentences, spoken-friendly
+  "relevantTaskIds": string[]  // ONLY for action "query" - ids of tasks you referenced in the answer
 }
 
 Rules:
+- Use action "query" when the speaker is ASKING about their tasks rather than asking you to change anything - e.g. "what do I have today", "what's urgent this week", "how many client tasks are open", "when is my dentist appointment". Answer strictly from the tasks list provided above - never invent a task that isn't in that list. If nothing matches, say so plainly in "answer" (e.g. "You have nothing scheduled today."). Do not set missingFields/summary for query (leave missingFields empty and summary can restate the question briefly).
 - For "add": title is essential. If the speaker didn't give a clear title, action must be "unclear" with a clarification asking for it.
 - For "edit"/"delete"/"complete"/"uncomplete": you must resolve to exactly one taskId from the existing tasks list by title/description similarity. If none match confidently or more than one plausibly matches, set action to "unclear" and put the ambiguity in "clarification" (list the candidate titles).
 - Only include fields the speaker actually specified or that you confidently inferred; leave everything else absent (not empty string) rather than guessing.
@@ -98,6 +108,7 @@ export async function POST(request: NextRequest) {
     tasks?: TaskContext[];
     clients?: ClientContext[];
     previousDraft?: VoiceCommandDraft;
+    todayLocal?: string;
   };
   try {
     body = await request.json();
@@ -112,10 +123,15 @@ export async function POST(request: NextRequest) {
 
   const tasks = Array.isArray(body.tasks) ? body.tasks.slice(0, 200) : [];
   const clients = Array.isArray(body.clients) ? body.clients.slice(0, 100) : [];
-  const todayIso = new Date().toISOString().split('T')[0];
+  // Use the browser's local date, not the server's (which runs in UTC on
+  // Vercel) - otherwise "today"/"this week" resolve to the wrong day during
+  // the hours the server's UTC date and the user's local date disagree.
+  const isValidIsoDate = /^\d{4}-\d{2}-\d{2}$/.test(body.todayLocal || '');
+  const todayIso = isValidIsoDate ? (body.todayLocal as string) : new Date().toISOString().split('T')[0];
+  const weekdayName = new Date(`${todayIso}T00:00:00`).toLocaleDateString('en-US', { weekday: 'long' });
 
   const messages = [
-    { role: 'system', content: buildSystemPrompt(todayIso, tasks, clients) },
+    { role: 'system', content: buildSystemPrompt(todayIso, weekdayName, tasks, clients) },
     ...(body.previousDraft
       ? [{ role: 'system', content: buildMergePrompt(body.previousDraft) }]
       : []),
