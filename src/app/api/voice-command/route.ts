@@ -147,7 +147,10 @@ export async function POST(request: NextRequest) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        // llama-3.3-70b-versatile was deprecated/decommissioned by Groq on
+        // 2026-08-16. gpt-oss-20b is OpenAI's open-weight model, still on
+        // Groq's free tier.
+        model: 'openai/gpt-oss-20b',
         messages,
         temperature: 0.1,
         response_format: { type: 'json_object' },

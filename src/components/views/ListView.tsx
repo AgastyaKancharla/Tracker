@@ -217,13 +217,13 @@ export const ListView: React.FC<ListViewProps> = ({
                     {task.workspace}
                   </span>
 
-                  <span className={`inline-block px-2 py-0.5 rounded-md font-mono text-[10px] uppercase font-semibold ${
+                  <span className={`inline-block px-2 py-0.5 rounded-md font-mono text-[10px] uppercase font-semibold transition-colors duration-200 ${
                     task.priority === 'urgent'
-                      ? 'bg-neutral-100 text-black border border-neutral-300'
+                      ? 'bg-red-600 text-white border border-red-600'
                       : task.priority === 'high'
-                      ? 'bg-neutral-100 text-neutral-800 border border-neutral-300'
+                      ? 'bg-orange-100 text-orange-700 border border-orange-300'
                       : task.priority === 'medium'
-                      ? 'bg-neutral-100 text-neutral-700 border border-neutral-300'
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
                       : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
                   }`}>
                     {task.priority}
@@ -381,13 +381,13 @@ export const ListView: React.FC<ListViewProps> = ({
 
                       {/* Priority */}
                       <td className="py-3 px-4">
-                        <span className={`inline-block px-2 py-0.5 rounded font-mono text-[10px] uppercase font-semibold ${
+                        <span className={`inline-block px-2 py-0.5 rounded font-mono text-[10px] uppercase font-semibold transition-colors duration-200 ${
                           task.priority === 'urgent'
-                            ? 'bg-neutral-100 text-black border border-neutral-300'
+                            ? 'bg-red-600 text-white border border-red-600'
                             : task.priority === 'high'
-                            ? 'bg-neutral-100 text-neutral-800 border border-neutral-300'
+                            ? 'bg-orange-100 text-orange-700 border border-orange-300'
                             : task.priority === 'medium'
-                            ? 'bg-neutral-100 text-neutral-700 border border-neutral-300'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
                             : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
                         }`}>
                           {task.priority}

@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: 'kanban', label: 'Kanban Workflow', icon: <KanbanSquare className="w-4 h-4" /> },
     { id: 'list', label: 'Task Ledger', icon: <CheckSquare className="w-4 h-4" /> },
-    { id: 'calendar', label: 'Calendar & Agenda', icon: <CalendarDays className="w-4 h-4" />, badge: eventsTodayCount > 0 ? `${eventsTodayCount} today` : undefined },
+    { id: 'calendar', label: 'Calendar & Agenda', icon: <CalendarDays className="w-4 h-4" /> },
     { id: 'clients', label: 'Client Hub', icon: <Users2 className="w-4 h-4" />, badge: activeClientCount },
     { id: 'habits', label: 'Habits & Routine', icon: <Flame className="w-4 h-4 text-neutral-500" /> },
   ];
@@ -158,12 +158,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="p-2 rounded-lg bg-white border border-neutral-200 shadow-2xs">
-              <div className="text-sm font-bold text-black font-mono">{urgentCount}</div>
+            <div className={`p-2 rounded-lg border shadow-2xs transition-colors duration-200 ${
+              urgentCount > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-neutral-200'
+            }`}>
+              <div className={`text-sm font-bold font-mono ${urgentCount > 0 ? 'text-red-600' : 'text-black'}`}>
+                {urgentCount}
+              </div>
               <div className="text-[10px] text-neutral-500 uppercase">Urgent Items</div>
             </div>
             <div className="p-2 rounded-lg bg-white border border-neutral-200 shadow-2xs">
-              <div className="text-sm font-bold text-zinc-700 font-mono">{eventsTodayCount}</div>
+              <div className="text-sm font-bold text-blue-700 font-mono">{eventsTodayCount}</div>
               <div className="text-[10px] text-neutral-500 uppercase">Events Today</div>
             </div>
           </div>
