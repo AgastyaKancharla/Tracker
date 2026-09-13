@@ -54,12 +54,12 @@ interface VoiceCommandModalProps {
   onClose: () => void;
   tasks: TaskItem[];
   clients: Client[];
-  onSaveTask: (taskData: Partial<TaskItem>) => void;
-  onDeleteTask: (taskId: string) => void;
-  onUpdateTaskStatus: (taskId: string, status: TaskStatus) => void;
+  onSaveTask: (taskData: Partial<TaskItem>) => void | Promise<void>;
+  onDeleteTask: (taskId: string) => void | Promise<void>;
+  onUpdateTaskStatus: (taskId: string, status: TaskStatus) => void | Promise<void>;
 }
 
-type Phase = 'idle' | 'recording' | 'processing' | 'reviewing' | 'error';
+type Phase = 'idle' | 'recording' | 'processing' | 'reviewing' | 'error' | 'saving';
 
 function getSpeechRecognition(): (new () => SpeechRecognitionLike) | null {
   if (typeof window === 'undefined') return null;
@@ -81,6 +81,8 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [isMerging, setIsMerging] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const isSupported = !!getSpeechRecognition();
@@ -92,20 +94,13 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
       setDraft(null);
       setErrorMsg(null);
       setEditingField(null);
+      setIsSaving(false);
+      setSaveError(null);
       recognitionRef.current?.stop();
-      if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
-
-  const speak = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1;
-    window.speechSynthesis.speak(utterance);
-  };
 
   const matchedTask = draft?.taskId ? tasks.find((t) => t.id === draft.taskId) : undefined;
 
@@ -176,9 +171,6 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
       const newDraft = data.draft as VoiceCommandDraft;
       setDraft(newDraft);
       setPhase('reviewing');
-      if (newDraft.action === 'query' && newDraft.answer) {
-        speak(newDraft.answer);
-      }
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Voice command failed.');
       setPhase('error');
@@ -215,39 +207,45 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
     draft.action !== 'query' &&
     (needsTaskForm ? !!(draft.title || matchedTask?.title) : !!draft.taskId);
 
-  const handleSave = () => {
-    if (!draft || !canSave) return;
-
-    if (draft.action === 'add') {
-      onSaveTask({
-        title: draft.title,
-        description: draft.description,
-        workspace: draft.workspace || 'personal',
-        priority: draft.priority || 'medium',
-        dueDate: draft.dueDate ?? undefined,
-        dueTime: draft.dueTime ?? undefined,
-        isEvent: draft.isEvent,
-        clientName: draft.clientName,
-      });
-    } else if (draft.action === 'edit' && draft.taskId) {
-      onSaveTask({
-        id: draft.taskId,
-        title: draft.title,
-        description: draft.description,
-        workspace: draft.workspace,
-        priority: draft.priority,
-        dueDate: draft.dueDate ?? undefined,
-        dueTime: draft.dueTime ?? undefined,
-        isEvent: draft.isEvent,
-      });
-    } else if (draft.action === 'delete' && draft.taskId) {
-      onDeleteTask(draft.taskId);
-    } else if (draft.action === 'complete' && draft.taskId) {
-      onUpdateTaskStatus(draft.taskId, 'done');
-    } else if (draft.action === 'uncomplete' && draft.taskId) {
-      onUpdateTaskStatus(draft.taskId, 'todo');
+  const handleSave = async () => {
+    if (!draft || !canSave || isSaving) return;
+    setSaveError(null);
+    setIsSaving(true);
+    try {
+      if (draft.action === 'add') {
+        await onSaveTask({
+          title: draft.title,
+          description: draft.description,
+          workspace: draft.workspace || 'personal',
+          priority: draft.priority || 'medium',
+          dueDate: draft.dueDate ?? undefined,
+          dueTime: draft.dueTime ?? undefined,
+          isEvent: draft.isEvent,
+          clientName: draft.clientName,
+        });
+      } else if (draft.action === 'edit' && draft.taskId) {
+        await onSaveTask({
+          id: draft.taskId,
+          title: draft.title,
+          description: draft.description,
+          workspace: draft.workspace,
+          priority: draft.priority,
+          dueDate: draft.dueDate ?? undefined,
+          dueTime: draft.dueTime ?? undefined,
+          isEvent: draft.isEvent,
+        });
+      } else if (draft.action === 'delete' && draft.taskId) {
+        await onDeleteTask(draft.taskId);
+      } else if (draft.action === 'complete' && draft.taskId) {
+        await onUpdateTaskStatus(draft.taskId, 'done');
+      } else if (draft.action === 'uncomplete' && draft.taskId) {
+        await onUpdateTaskStatus(draft.taskId, 'todo');
+      }
+      onClose();
+    } catch (err) {
+      setIsSaving(false);
+      setSaveError(err instanceof Error ? err.message : 'Failed to save. Please try again.');
     }
-    onClose();
   };
 
   interface Chip {
@@ -353,7 +351,7 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
             </div>
           )}
 
-          {phase === 'reviewing' && draft && (
+          {(phase === 'reviewing' || phase === 'recording') && draft && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 font-mono">
@@ -377,15 +375,6 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
                   <p className="text-sm text-neutral-900 leading-relaxed">
                     {draft.answer || 'No answer returned.'}
                   </p>
-                  {draft.answer && (
-                    <button
-                      type="button"
-                      onClick={() => speak(draft.answer!)}
-                      className="text-[11px] font-mono text-neutral-500 hover:text-neutral-900 transition-colors"
-                    >
-                      🔊 Replay
-                    </button>
-                  )}
                   {!!draft.relevantTaskIds?.length && (
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {draft.relevantTaskIds.map((id) => {
@@ -528,24 +517,44 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
                 </div>
               )}
 
-              {/* Hold-to-speak: adds/corrects details for add/edit, asks a fresh follow-up question for query */}
-              <div className="flex items-center gap-2 pt-1">
+              {/* Tap to add/correct details for add/edit, or ask a fresh follow-up question for query. Tap again to stop and submit. */}
+              <div className="space-y-1.5 pt-1">
                 <button
                   type="button"
                   disabled={!isSupported}
-                  onPointerDown={() => startRecording(!isQuery)}
-                  onPointerUp={stopRecording}
-                  onPointerLeave={() => {
-                    if (recognitionRef.current) stopRecording();
-                  }}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-neutral-100 border border-neutral-300 text-xs font-semibold text-neutral-700 hover:bg-neutral-200 transition-colors disabled:opacity-40 select-none"
+                  onClick={() => (phase === 'recording' ? stopRecording() : startRecording(!isQuery))}
+                  className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold transition-colors disabled:opacity-40 select-none ${
+                    phase === 'recording'
+                      ? 'bg-black text-white border-black animate-pulse'
+                      : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-neutral-200'
+                  }`}
                 >
-                  <Mic className="w-3.5 h-3.5" />
-                  {isQuery ? 'Hold to ask another question' : 'Hold to add or correct by voice'}
+                  {phase === 'recording' ? (
+                    <>
+                      <Square className="w-3.5 h-3.5" />
+                      <span>Listening… tap to stop</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="w-3.5 h-3.5" />
+                      <span>{isQuery ? 'Tap to ask another question' : 'Tap to add or correct by voice'}</span>
+                    </>
+                  )}
                 </button>
+                {phase === 'recording' && (
+                  <p className="text-xs text-neutral-700 italic text-center px-2 min-h-[1em]">
+                    {transcript ? `"${transcript}"` : 'Listening…'}
+                  </p>
+                )}
               </div>
               {transcript && phase === 'reviewing' && (
                 <p className="text-[11px] text-neutral-400 italic">Last heard: &quot;{transcript}&quot;</p>
+              )}
+              {saveError && (
+                <div className="p-3 rounded-lg bg-neutral-100 border border-neutral-400 text-xs text-neutral-800 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  <span>{saveError}</span>
+                </div>
               )}
             </div>
           )}
@@ -571,13 +580,17 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={!canSave}
+                  disabled={!canSave || isSaving}
                   className={`px-5 py-2 text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-40 ${
                     isDestructive ? 'bg-black text-white hover:bg-neutral-800' : 'bg-neutral-900 text-white hover:bg-black'
                   }`}
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>{isDestructive ? 'Confirm Delete' : 'Save'}</span>
+                  {isSaving ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  <span>{isSaving ? 'Saving…' : isDestructive ? 'Confirm Delete' : 'Save'}</span>
                 </button>
               </>
             )}
