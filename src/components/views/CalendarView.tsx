@@ -61,6 +61,13 @@ function formatMinutes(mins: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h} hrs`;
 }
 
+// Cover the full 24h day so events outside the typical 8am-10pm work window
+// (e.g. a late-night 23:00 task) still show up in the occupied/free analysis,
+// instead of only in the deadline list above.
+const DAY_START = 0;
+const DAY_END = 24 * 60;
+const TOTAL_DAY_MINUTES = DAY_END - DAY_START;
+
 function computeDayTimeline(tasksForDay: TaskItem[]): {
   blocks: DayScheduleBlock[];
   totalOccupiedMinutes: number;
@@ -68,13 +75,6 @@ function computeDayTimeline(tasksForDay: TaskItem[]): {
   percentOccupied: number;
   untimedTasks: TaskItem[];
 } {
-  // Cover the full 24h day so events outside the typical 8am-10pm work window
-  // (e.g. a late-night 23:00 task) still show up in the occupied/free analysis
-  // below, instead of only in the deadline list above.
-  const DAY_START = 0;
-  const DAY_END = 24 * 60;
-  const TOTAL_DAY_MINUTES = DAY_END - DAY_START;
-
   const timedTasks: { task: TaskItem; start: number; end: number }[] = [];
   const untimedTasks: TaskItem[] = [];
 
@@ -174,6 +174,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
   const [mobileTab, setMobileTab] = useState<'calendar' | 'schedule'>('calendar');
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const [expandedPopupTaskIds, setExpandedPopupTaskIds] = useState<Set<string>>(new Set());
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -252,6 +253,139 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+  const togglePopupTaskExpanded = (taskId: string) => {
+    setExpandedPopupTaskIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(taskId)) {
+        next.delete(taskId);
+      } else {
+        next.add(taskId);
+      }
+      return next;
+    });
+  };
+
+  // Day-click popup: just the day's tasks and their info (time, title,
+  // click-to-expand notes) - no free-time analysis, that lives in the
+  // Day Free-Time Map panel instead.
+  const renderDayTaskListPopup = () => {
+    const timed = [...selectedDayTasks]
+      .filter((t) => t.dueTime)
+      .sort((a, b) => (a.dueTime! < b.dueTime! ? -1 : a.dueTime! > b.dueTime! ? 1 : 0));
+    const untimed = selectedDayTasks.filter((t) => !t.dueTime);
+    const ordered = [...timed, ...untimed];
+
+    return (
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-neutral-200 space-y-3 shadow-xs">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="w-4 h-4 text-neutral-900" />
+              <h3 className="text-sm font-bold text-neutral-900">{formatDate(selectedDate)}</h3>
+            </div>
+            <p className="text-[11px] text-neutral-500 mt-0.5">
+              {selectedDayTasks.length} item{selectedDayTasks.length === 1 ? '' : 's'}
+            </p>
+          </div>
+          <button
+            onClick={() => onOpenTaskModal(undefined, undefined, selectedDate)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-xs transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add</span>
+          </button>
+        </div>
+
+        {ordered.length === 0 ? (
+          <div className="py-8 px-4 text-center border border-dashed border-neutral-300 bg-neutral-50/50 rounded-xl">
+            <p className="text-xs text-neutral-500">Nothing scheduled on this day.</p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+            {ordered.map((t) => {
+              const isExpanded = expandedPopupTaskIds.has(t.id);
+              return (
+                <div
+                  key={t.id}
+                  className="rounded-xl border border-neutral-200 bg-neutral-50 overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() => togglePopupTaskExpanded(t.id)}
+                    className="w-full flex items-center justify-between gap-2 p-3 text-left"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="px-1.5 py-0.5 rounded font-mono text-[10px] bg-neutral-100 text-black border border-neutral-300 font-bold flex-shrink-0">
+                        {t.dueTime || 'Anytime'}
+                      </span>
+                      <span
+                        className={`text-xs font-bold truncate ${
+                          t.status === 'done' ? 'text-neutral-400 line-through' : 'text-neutral-900'
+                        }`}
+                      >
+                        {t.title}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[9px] font-mono px-1.5 py-0.2 rounded uppercase flex-shrink-0 font-medium ${
+                        t.workspace === 'personal'
+                          ? 'bg-stone-50 text-stone-700 border border-stone-200'
+                          : t.workspace === 'business'
+                          ? 'bg-neutral-100 text-black border border-neutral-300'
+                          : 'bg-zinc-100 text-zinc-900 border border-zinc-300'
+                      }`}
+                    >
+                      {t.workspace}
+                    </span>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-3 pb-3 space-y-2 border-t border-neutral-200 pt-2">
+                      {t.description ? (
+                        <p className="text-xs text-neutral-600 whitespace-pre-wrap">{t.description}</p>
+                      ) : (
+                        <p className="text-xs text-neutral-400 italic">No notes added.</p>
+                      )}
+                      <div className="flex items-center gap-2 flex-wrap text-[10px] font-mono text-neutral-500">
+                        <span className="px-1.5 py-0.5 rounded bg-white border border-neutral-200 capitalize">
+                          {t.priority} priority
+                        </span>
+                        {t.clientName && (
+                          <span className="px-1.5 py-0.5 rounded bg-white border border-neutral-200">
+                            Client: {t.clientName}
+                          </span>
+                        )}
+                        {t.estimatedHours ? (
+                          <span className="px-1.5 py-0.5 rounded bg-white border border-neutral-200">
+                            Est. {formatDuration(t.estimatedHours)}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          onClick={() => onToggleStatus(t.id)}
+                          className="px-2.5 py-1 rounded-md border border-neutral-300 bg-white text-[11px] text-neutral-700 hover:border-neutral-500 transition-colors font-semibold"
+                        >
+                          {t.status === 'done' ? '✓ Done' : 'Mark Done'}
+                        </button>
+                        <button
+                          onClick={() => onEditTask(t)}
+                          className="px-2.5 py-1 rounded-md bg-neutral-900 hover:bg-black text-white text-[11px] font-semibold transition-colors"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderAgendaCard = () => (
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-neutral-200 space-y-4 shadow-xs">
 
@@ -283,21 +417,39 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-neutral-700 font-semibold flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5 text-zinc-600" />
-                  Day Time-Budget (08:00 - 22:00)
+                  Day Time-Budget (00:00 - 24:00)
                 </span>
-                <span className="text-neutral-500">14 hrs Window</span>
+                <span className="text-neutral-500">24 hr Window</span>
               </div>
 
-              {/* Visual Segmented Utilization Bar */}
-              <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden flex">
-                <div
-                  className="h-full bg-gradient-to-r from-neutral-900 via-neutral-500 to-neutral-300 transition-all duration-300"
-                  style={{ width: `${percentOccupied}%` }}
-                />
-                <div
-                  className="h-full bg-stone-500 transition-all duration-300"
-                  style={{ width: `${100 - percentOccupied}%` }}
-                />
+              {/* Visual Segmented Utilization Bar - one segment per actual free/booked window */}
+              <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden flex gap-px">
+                {blocks.map((block, idx) => (
+                  <div
+                    key={`bar-seg-${idx}`}
+                    title={`${block.type === 'occupied' ? 'Booked' : 'Free'} ${block.startTimeStr}-${block.endTimeStr} (${formatMinutes(block.durationMinutes)})`}
+                    className={`h-full transition-all duration-300 ${
+                      block.type === 'occupied' ? 'bg-neutral-900' : 'bg-stone-400'
+                    }`}
+                    style={{ width: `${(block.durationMinutes / TOTAL_DAY_MINUTES) * 100}%` }}
+                  />
+                ))}
+              </div>
+
+              {/* Free/booked windows as text, e.g. "06:00-09:00 free, 11:00-12:00 booked, ..." */}
+              <div className="flex flex-wrap gap-1.5 text-[10px] font-mono">
+                {blocks.map((block, idx) => (
+                  <span
+                    key={`bar-label-${idx}`}
+                    className={`px-1.5 py-0.5 rounded border ${
+                      block.type === 'occupied'
+                        ? 'bg-neutral-900 text-white border-neutral-900'
+                        : 'bg-stone-50 text-stone-700 border-stone-300'
+                    }`}
+                  >
+                    {block.startTimeStr}-{block.endTimeStr} {block.type === 'occupied' ? '(booked)' : '(free)'}
+                  </span>
+                ))}
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-center pt-1 font-mono text-[11px]">
@@ -664,7 +816,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 <X className="w-4 h-4" />
               </button>
             </div>
-            {renderAgendaCard()}
+            {renderDayTaskListPopup()}
           </div>
         </div>
       )}
