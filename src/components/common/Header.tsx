@@ -1,5 +1,6 @@
 'use client';
 
+import { AppAlertsButton } from './AppAlertsButton';
 import React from 'react';
 import { 
   Plus, 
@@ -199,6 +200,8 @@ export const Header: React.FC<HeaderProps> = ({
               <span>New Client</span>
             </button>
           )}
+
+          <AppAlertsButton />
 
           {/* Voice Command button */}
           <button

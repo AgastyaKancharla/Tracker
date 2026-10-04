@@ -185,12 +185,41 @@ export async function createTask(task: Omit<TaskItem, 'id' | 'createdAt'>): Prom
   return taskFromRow(data as TaskRow);
 }
 
+const TASK_COLUMNS: Partial<Record<keyof TaskItem, keyof ReturnType<typeof taskToRow>>> = {
+  title: 'title',
+  description: 'description',
+  workspace: 'workspace',
+  status: 'status',
+  priority: 'priority',
+  dueDate: 'due_date',
+  dueTime: 'due_time',
+  tags: 'tags',
+  clientId: 'client_id',
+  isEvent: 'is_event',
+  eventDurationMinutes: 'event_duration_minutes',
+  location: 'location',
+  estimatedHours: 'estimated_hours',
+  loggedHours: 'logged_hours',
+  completedAt: 'completed_at',
+};
+
+// Only write the fields the caller passed, so a status toggle doesn't null out
+// the due date, client, description, etc.
+function partialTaskRow(task: Partial<TaskItem>, userId: string) {
+  const full = taskToRow(task, userId);
+  const row: Record<string, unknown> = {};
+  for (const [key, column] of Object.entries(TASK_COLUMNS)) {
+    if (key in task && column) row[column] = full[column];
+  }
+  return row;
+}
+
 export async function updateTask(id: string, task: Partial<TaskItem>): Promise<TaskItem> {
   const userId = await requireUserId();
   const supabase = createClient();
   const { data, error } = await supabase
     .from('tasks')
-    .update(taskToRow(task, userId))
+    .update(partialTaskRow(task, userId))
     .eq('id', id)
     .select('*, clients(name)')
     .single();
