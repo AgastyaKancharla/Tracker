@@ -13,6 +13,7 @@ import {
 } from '@/types';
 import {
   loadAll,
+  fetchTasks,
   createTask as dbCreateTask,
   updateTask as dbUpdateTask,
   deleteTask as dbDeleteTask,
@@ -33,6 +34,9 @@ import { CommandPalette } from '@/components/common/CommandPalette';
 import { TaskModal } from '@/components/modals/TaskModal';
 import { ClientModal } from '@/components/modals/ClientModal';
 import { VoiceCommandModal } from '@/components/modals/VoiceCommandModal';
+import { RescheduleSheet } from '@/components/modals/RescheduleSheet';
+import { AppAlertsButton } from '@/components/common/AppAlertsButton';
+import { registerServiceWorker } from '@/lib/push';
 import { DashboardView } from '@/components/views/DashboardView';
 import { KanbanView } from '@/components/views/KanbanView';
 import { ListView } from '@/components/views/ListView';
@@ -86,6 +90,9 @@ export default function TrackerApp() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [reschedulingTask, setReschedulingTask] = useState<TaskItem | null>(null);
+  // A "/?task=<id>" or "/?reschedule=<id>" link from a notification tap.
+  const [pendingAlertUrl, setPendingAlertUrl] = useState<string | null>(null);
 
   // Load data from Supabase on mount
   useEffect(() => {
@@ -108,6 +115,50 @@ export default function TrackerApp() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    registerServiceWorker();
+    if (window.location.search) setPendingAlertUrl(window.location.pathname + window.location.search);
+
+    const refreshTasks = () => fetchTasks().then(setTasks).catch(() => {});
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refreshTasks();
+    };
+    const onSwMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'tasks-changed') refreshTasks();
+      if (e.data?.type === 'open-url') setPendingAlertUrl(e.data.url);
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    navigator.serviceWorker?.addEventListener('message', onSwMessage);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      navigator.serviceWorker?.removeEventListener('message', onSwMessage);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!pendingAlertUrl || !isLoaded) return;
+    const params = new URL(pendingAlertUrl, window.location.origin).searchParams;
+    const rescheduleId = params.get('reschedule');
+    const task = tasks.find((t) => t.id === (rescheduleId || params.get('task')));
+    if (task && rescheduleId) {
+      setReschedulingTask(task);
+    } else if (task) {
+      setEditingTask(task);
+      setIsTaskModalOpen(true);
+    }
+    setPendingAlertUrl(null);
+    if (window.location.search) window.history.replaceState(null, '', window.location.pathname);
+  }, [pendingAlertUrl, isLoaded, tasks]);
+
+  const handleRescheduleTask = async (task: TaskItem, dueDate: string, dueTime: string) => {
+    const updated = await dbUpdateTask(task.id, {
+      dueDate,
+      dueTime,
+      ...(task.status === 'done' ? { status: 'todo' as TaskStatus, completedAt: undefined } : {}),
+    });
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+  };
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -504,6 +555,7 @@ export default function TrackerApp() {
             </div>
 
             <div className="flex items-center gap-1.5">
+              <AppAlertsButton />
               <button
                 onClick={() => setIsCommandPaletteOpen(true)}
                 className="p-2 rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
@@ -690,6 +742,12 @@ export default function TrackerApp() {
         defaultWorkspace={taskModalDefaultWorkspace}
         defaultDate={taskModalDefaultDate}
         defaultTime={taskModalDefaultTime}
+      />
+
+      <RescheduleSheet
+        task={reschedulingTask}
+        onClose={() => setReschedulingTask(null)}
+        onReschedule={handleRescheduleTask}
       />
 
       <ClientModal

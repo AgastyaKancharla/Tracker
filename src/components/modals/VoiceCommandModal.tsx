@@ -249,7 +249,7 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
         });
       } else if (draft.action === 'edit' && draft.taskId) {
         const clientId = resolveClientId(draft.clientName);
-        await onSaveTask({
+        const edits: Partial<TaskItem> = {
           id: draft.taskId,
           title: draft.title,
           description: draft.description,
@@ -260,7 +260,11 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({
           isEvent: draft.isEvent,
           clientName: draft.clientName,
           ...(clientId ? { clientId } : {}),
-        });
+        };
+        // Only send fields the speaker actually changed; absent ones must stay untouched.
+        await onSaveTask(
+          Object.fromEntries(Object.entries(edits).filter(([, v]) => v !== undefined)) as Partial<TaskItem>
+        );
       } else if (draft.action === 'delete' && draft.taskId) {
         await onDeleteTask(draft.taskId);
       } else if (draft.action === 'complete' && draft.taskId) {
